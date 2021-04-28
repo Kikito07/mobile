@@ -35,5 +35,3 @@ Engage with the community:
 * Contiki-NG tag on Stack Overflow: https://stackoverflow.com/questions/tagged/contiki-ng
 * Gitter: https://gitter.im/contiki-ng
 * Twitter: https://twitter.com/contiki_ng
-# mobile
-# mobile
