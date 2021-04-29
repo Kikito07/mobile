@@ -3,7 +3,6 @@ all: $(CONTIKI_PROJECT)
 CONTIKI = ../..
 
 # The BR is either native or embedded, and in the latter case must support SLIP
-PLATFORMS_EXCLUDE = nrf52dk z1
 
 # Include RPL BR module
 include $(CONTIKI)/Makefile.dir-variables
