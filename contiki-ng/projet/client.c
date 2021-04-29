@@ -21,11 +21,11 @@
 int main() {
     int sockfd;
     char buffer[MAXLINE];
-    char *data = "hello";
+    u_int32_t data = 124562;
     struct sockaddr_in6 servaddr;
   
     // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+    if ( (sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0 ) {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
@@ -42,7 +42,7 @@ int main() {
     }
     int n, len;
 
-    err = sendto(sockfd, (const char *)data, strlen(data),
+    err = sendto(sockfd, (const int *)(&data), sizeof(int),
         MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
             sizeof(servaddr));
 

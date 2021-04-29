@@ -1,14 +1,14 @@
 #include "contiki.h"
 #include "contiki-lib.h"
 #include "contiki-net.h"
+#include "dev/leds.h"
 
 #ifndef DEBUG
 #define DEBUG DEBUG_FULL
 #endif
 
-#define USE_RPL_CLASSIC 0
 
-#include "dev/leds.h"
+#define USE_RPL_CLASSIC 0
 
 #include "net/ipv6/uip-debug.h"
 #include "dev/watchdog.h"
@@ -52,9 +52,14 @@ tcpip_handler(void)
 {
     memset(buf, 0, MAX_PAYLOAD_LEN);
     if(uip_newdata()) {
-        leds_on(LEDS_RED);
+        // leds_on(LEDS_GREEN);
+        // leds_toggle(LEDS_GREEN);
+        // leds_toggle(LEDS_RED);
+        // leds_toggle(LEDS_BLUE);
         len = uip_datalen();
         memcpy(buf, uip_appdata, len);
+        PRINTF("data %d",*buf);
+        
         PRINTF("%u bytes from [", len);
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
         PRINTF("]:%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
@@ -68,7 +73,7 @@ tcpip_handler(void)
         server_conn->rport = 0;
     #endif
     }
-    leds_off(LEDS_RED);
+    
     return;
 }
 
@@ -140,6 +145,9 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
+    
+    
+    // leds_toogle(LEDS_BLUE);
 
 #if SERVER_RPL_ROOT
     create_dag();
@@ -152,7 +160,15 @@ PROCESS_THREAD(udp_server_process, ev, data)
     while(1) {
         PROCESS_YIELD();
         if(ev == tcpip_event) {
-            PRINTF("WOW");
+            
+            // leds_toggle(LEDS_GREEN);
+            // leds_toggle(LEDS_RED);
+            // leds_toggle(LEDS_BLUE);
+            // leds_on(LEDS_GREEN);
+            // leds_on(LEDS_RED);
+            // leds_on(LEDS_BLUE);
+            leds_on(LEDS_GREEN);
+
             tcpip_handler();
         }
     }
