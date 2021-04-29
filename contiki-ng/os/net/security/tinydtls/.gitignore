@@ -52,3 +52,4 @@ obj_*
 *.z1
 *.z1sp
 .project
+*.git

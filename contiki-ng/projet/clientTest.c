@@ -22,8 +22,7 @@ int main() {
     int sockfd;
     char buffer[MAXLINE];
     char* data = "hello";
-    int number = 1256;
-    number = htonl(number);
+    int number = 127;
     struct sockaddr_in6 servaddr;
   
     // Creating socket file descriptor
@@ -44,7 +43,7 @@ int main() {
     }
     int n, len;
 
-    err = sendto(sockfd, data, sizeof(data),
+    err = sendto(sockfd, &number, sizeof(int),
         MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
             sizeof(servaddr));
 

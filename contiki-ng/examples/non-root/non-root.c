@@ -2,7 +2,7 @@
 #include "contiki-lib.h"
 #include "contiki-net.h"
 #include "dev/leds.h"
-
+#include <stdlib.h>
 #ifndef DEBUG
 #define DEBUG DEBUG_FULL
 #endif
@@ -58,7 +58,7 @@ tcpip_handler(void)
         // leds_toggle(LEDS_BLUE);
         len = uip_datalen();
         memcpy(buf, uip_appdata, len);
-        PRINTF("data %d",*buf);
+        PRINTF("data %d \n",*buf);
         
         PRINTF("%u bytes from [", len);
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
