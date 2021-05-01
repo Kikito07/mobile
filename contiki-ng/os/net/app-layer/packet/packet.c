@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <unistd.h>
-#include <zlib.h>
 
 /* Extra #includes */
 /* Your code will be inserted here */
@@ -33,7 +31,6 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
 
 pkt_status_code pkt_encode(const pkt_t *pkt, char *buf) {
 
-  size_t pkt_size = 0;
   int index = 0;
   *buf  = pkt_get_type(pkt) << 6;
   *buf |= pkt_get_msgid(pkt);
@@ -66,7 +63,6 @@ pkt_status_code pkt_set_msgid(pkt_t *pkt, const uint8_t msgid) {
 
 pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data,
                                 const uint16_t length) {
-  pkt_status_code err;
   memcpy(pkt->payload, data, length);
   return PKT_OK;
 }

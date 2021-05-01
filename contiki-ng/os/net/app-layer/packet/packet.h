@@ -56,7 +56,9 @@ void pkt_del(pkt_t *);
 
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt);
 
-pkt_status_code pkt_encode(const pkt_t *, char *buf, size_t *len);
+pkt_status_code pkt_encode(const pkt_t *, char *buf);
+
+ptypes_t pkt_get_type(const pkt_t *);
 
 uint8_t pkt_get_msgid(const pkt_t *);
 

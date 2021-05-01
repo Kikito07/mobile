@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
   
 #define PORT 3000
 #define MAXLINE 1024
@@ -19,12 +20,33 @@
   
 // Driver code
 int main() {
+    char *buffer[MAXLINE];
     int sockfd;
-    char buffer[MAXLINE];
     char* data = "hello";
     int number = 127;
     struct sockaddr_in6 servaddr;
-  
+    pkt_t* pkt = pkt_new();
+    char buf[5];
+    post_types_t post_type = PTYPE_LIGHT_OFF;
+    ptypes_t type = PTYPE_POST;
+    const uint8_t msgid = 1;
+    
+
+    if(PKT_OK != pkt_set_type(pkt,type)){
+        return -1;
+    }
+
+    if(PKT_OK != pkt_set_payload(pkt, (const char*)&post_type,2)){
+        return -1;
+    }
+ 
+    if(PKT_OK != pkt_set_msgid(pkt,msgid)){
+        return -1;
+    }
+
+    if(PKT_OK != pkt_encode(pkt, buf)){
+        return -1;
+    }
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0 ) {
         perror("socket creation failed");
@@ -42,8 +64,10 @@ int main() {
         printf("error");
     }
     int n, len;
+  
 
-    err = sendto(sockfd, &number, sizeof(int),
+
+    err = sendto(sockfd, buf, sizeof(int),
         MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
             sizeof(servaddr));
 
