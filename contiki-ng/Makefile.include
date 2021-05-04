@@ -71,6 +71,7 @@ MODULES += $(CONTIKI_NG_SYS_DIR) $(CONTIKI_NG_LIB_DIR) $(CONTIKI_NG_DEV_DIR)
 MODULES += $(CONTIKI_NG_NET_DIR) $(CONTIKI_NG_ROUTING_DIR)
 MODULES += $(CONTIKI_NG_MAC_DIR) $(CONTIKI_NG_MAC_DIR)/framer
 MODULES += $(CONTIKI_NG_STORAGE_DIR) $(CONTIKI_NG_SERVICES_DIR)
+MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/packet
 
 # Automatically include project-conf.h if found
 ifneq ("$(wildcard project-conf.h)","")
