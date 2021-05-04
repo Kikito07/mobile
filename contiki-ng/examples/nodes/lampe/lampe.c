@@ -8,7 +8,6 @@
 #define DEBUG DEBUG_FULL
 #endif
 
-
 #define USE_RPL_CLASSIC 0
 
 #include "net/ipv6/uip-debug.h"
@@ -48,35 +47,43 @@ static uint16_t len;
 
 /*---------------------------------------------------------------------------*/
 
-
 static void
 handle_packet()
 {
     pkt_t pkt;
     size_t size = 3;
-    if( PKT_OK != pkt_decode(buf,size,&pkt)){
+    if (PKT_OK != pkt_decode(buf, size, &pkt))
+    {
         printf("packet received but encode fail");
     }
-    printf("TEST MA GUEUL-1\n");
-    if(pkt_get_type(&pkt) == PTYPE_POST){
-        printf("TEST MA GUEUL0\n");
+    if (pkt_get_type(&pkt) == PTYPE_POST)
+    {
         const char *payload = pkt_get_payload(&pkt);
         post_types_t post_type = payload[0];
-        if (post_type == PTYPE_LIGHT_ON){
-            printf("TEST MA GUEUL\n");
+        if (post_type == PTYPE_LIGHT_ON)
+        {
             leds_on(LEDS_RED);
         }
-        if (post_type == PTYPE_LIGHT_OFF){
+        if (post_type == PTYPE_LIGHT_OFF)
+        {
             leds_off(LEDS_RED);
         }
     }
+    pkt_set_type(&pkt, PTYPE_ACK);
+    pkt_encode(&pkt, buf);
+    uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+    server_conn->rport = UIP_UDP_BUF->srcport;
+    uip_udp_packet_send(server_conn, buf, len);
+    uip_create_unspecified(&server_conn->ripaddr);
+    server_conn->rport = 0;
 }
 
 static void
 tcpip_handler(void)
 {
     memset(buf, 0, MAX_PAYLOAD_LEN);
-    if(uip_newdata()) {
+    if (uip_newdata())
+    {
         len = uip_datalen();
         memcpy(buf, uip_appdata, len);
         handle_packet();
@@ -84,19 +91,15 @@ tcpip_handler(void)
     #if SERVER_REPLY
         uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
         server_conn->rport = UIP_UDP_BUF->srcport;
-
         uip_udp_packet_send(server_conn, buf, len);
-        /* Restore server connection to allow data from any node */
         uip_create_unspecified(&server_conn->ripaddr);
         server_conn->rport = 0;
     #endif
     }
-    
     return;
 }
 
 /*------------------------------------------------------------------------------------------------------ */
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -104,28 +107,29 @@ tcpip_handler(void)
 static void
 print_local_addresses(void)
 {
-  int i;
-  uint8_t state;
+    int i;
+    uint8_t state;
 
-  PRINTF("Server IPv6 addresses:\n");
-  for(i = 0; i < UIP_DS6_ADDR_NB; i++) {
-    state = uip_ds6_if.addr_list[i].state;
-    if(uip_ds6_if.addr_list[i].isused && (state == ADDR_TENTATIVE || state
-        == ADDR_PREFERRED)) {
-      PRINTF("  ");
-      PRINT6ADDR(&uip_ds6_if.addr_list[i].ipaddr);
-      PRINTF("\n");
-      if(state == ADDR_TENTATIVE) {
-        uip_ds6_if.addr_list[i].state = ADDR_PREFERRED;
-      }
+    PRINTF("Server IPv6 addresses:\n");
+    for (i = 0; i < UIP_DS6_ADDR_NB; i++)
+    {
+        state = uip_ds6_if.addr_list[i].state;
+        if (uip_ds6_if.addr_list[i].isused && (state == ADDR_TENTATIVE || state == ADDR_PREFERRED))
+        {
+            PRINTF("  ");
+            PRINT6ADDR(&uip_ds6_if.addr_list[i].ipaddr);
+            PRINTF("\n");
+            if (state == ADDR_TENTATIVE)
+            {
+                uip_ds6_if.addr_list[i].state = ADDR_PREFERRED;
+            }
+        }
     }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-create_dag()
+void create_dag()
 {
 
     uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);
@@ -138,17 +142,20 @@ create_dag()
     int tmp = rpl_dag_root_start();
 
 #if !USE_RPL_CLASSIC
-    if (tmp == 0) {
+    if (tmp == 0)
+    {
         PRINTF("Server set as ROOT in the DAG\n");
     }
-    else {
+    else
+    {
         PRINTF("RIP\n");
     }
 #else
     rpl_dag_t *dag;
     dag = rpl_set_root(RPL_DEFAULT_INSTANCE,
-                      &uip_ds6_get_global(ADDR_PREFERRED)->ipaddr);
-    if(dag != NULL) {
+                       &uip_ds6_get_global(ADDR_PREFERRED)->ipaddr);
+    if (dag != NULL)
+    {
         uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);
         rpl_set_prefix(dag, &ipaddr, 64);
         PRINTF("Created a new RPL dag with ID: ");
@@ -166,8 +173,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
-    
-    
+
     // leds_toogle(LEDS_BLUE);
 
 #if SERVER_RPL_ROOT
@@ -178,10 +184,12 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
-    while(1) {
+    while (1)
+    {
         PROCESS_YIELD();
-        if(ev == tcpip_event) {
-            
+        if (ev == tcpip_event)
+        {
+
             // leds_toggle(LEDS_GREEN);
             // leds_toggle(LEDS_RED);
             // leds_toggle(LEDS_BLUE);

@@ -7,7 +7,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
-  
+#include <poll.h>
+#include <pthread.h>
+
 #define PORT 3000
 #define MAXLINE 1024
 
@@ -17,81 +19,95 @@
 #define NODE3ADDR "bbbb::c30c:0:0:3"
 #define NODE4ADDR "bbbb::c30c:0:0:4"
 
-  
-// Driver code
-int main() {
-    
-    char *buffer[MAXLINE];
-    int sockfd;
-    char* data = "hello";
-    int number = 127;
-    struct sockaddr_in6 servaddr;
-    pkt_t* pkt = pkt_new();
-    char buf[5];
-    post_types_t post_type = PTYPE_LIGHT_ON;
-    ptypes_t type = PTYPE_POST;
-    const uint8_t msgid = 1;
-    
-    while(true){
-        char string [256];
-        printf ("Insert your command : \n");
-        gets (string);
-        printf ("Your address is: %s\n",string);
+char *buffer[MAXLINE];
+int sockfd;
+int number = 127;
+struct sockaddr_in6 servaddr;
+char buf[5];
+post_types_t post_type = PTYPE_LIGHT_ON;
+ptypes_t type = PTYPE_POST;
+const uint8_t msgid = 1;
+pkt_t *pkt;
+struct pollfd fds[10];
 
-        if(strcmp(string,"test") == 0){
-            if(PKT_OK != pkt_set_type(pkt,type)){
-                return -1;
-            }
+void *inputThread(void *empty)
+{
+    char string[256];
 
-            if(PKT_OK != pkt_set_payload(pkt, (const char*)&post_type,2)){
-                return -1;
-            }
-        
-            if(PKT_OK != pkt_set_msgid(pkt,msgid)){
-                return -1;
-            }
+    while (true)
+    {
+        printf("Insert your command : \n");
+        gets(string);
+        printf("Your message is: %s\n", string);
+        pkt = pkt_new();
+        if (strcmp(string, "test") == 0)
+        {
+            pkt_set_type(pkt, type);
 
-            if(PKT_OK != pkt_encode(pkt, buf)){
-                return -1;
-            }
-            // Creating socket file descriptor
-            if ( (sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0 ) {
-                perror("socket creation failed");
-                exit(EXIT_FAILURE);
-            }
-        
-            memset(&servaddr, 0, sizeof(servaddr));
-            
-            // Filling server information
-            servaddr.sin6_family = AF_INET6;
-            servaddr.sin6_port = htons(PORT);
-            int err;
-            err = inet_pton(AF_INET6,NODE1ADDR,&servaddr.sin6_addr);
-            if(err <= 0){
-                printf("error");
-            }
-            int n, len;
-        
+            pkt_set_payload(pkt, (const char *)&post_type, 2);
+
+            pkt_set_msgid(pkt, msgid);
+
+            pkt_encode(pkt, buf);
+
+            int n, len, err;
 
             err = sendto(sockfd, buf, sizeof(int),
-                MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
-                    sizeof(servaddr));
-
-            if(err < 0){
+                         MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                         sizeof(servaddr));
+            if (err < 0)
+            {
                 perror("Error printed by perror");
             }
 
             printf("Hello message sent.\n");
-                
-            n = recvfrom(sockfd, (char *)buffer, MAXLINE, 
-                        MSG_WAITALL, (struct sockaddr *) &servaddr,
-                        &len);
-            buffer[n] = '\0';
-            printf("Server : %s\n", buffer);
-        
-            close(sockfd);
 
-                }
+        }
     }
-return 0;
+}
+
+int main()
+{
+
+    if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
+    {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin6_family = AF_INET6;
+    servaddr.sin6_port = htons(PORT);
+    int err;
+    err = inet_pton(AF_INET6, NODE1ADDR, &servaddr.sin6_addr);
+    if (err <= 0)
+    {
+        printf("error");
+    }
+    fds[0].fd = sockfd;
+    fds[0].events = POLLIN;
+
+    pthread_t thread_id;
+    printf("Before Thread\n");
+    pthread_create(&thread_id, NULL, inputThread, NULL);
+
+    int n, len, rc;
+    while (true)
+    {
+        printf("hello\n");
+        rc = poll(fds, 1, 0);
+        if (rc == -1)
+        {
+            printf("error");
+        }
+      
+        n = recvfrom(sockfd, (char *)buffer, MAXLINE,
+                         MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
+        buffer[n] = '\0';
+        printf("%s\n",buffer);
+        
+    }
+    pthread_join(thread_id, NULL);
+    printf("After Thread\n");
+
+    return 0;
 }
