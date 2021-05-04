@@ -93,17 +93,19 @@ int main()
     int n, len, rc;
     while (true)
     {
-        printf("hello\n");
+       
         rc = poll(fds, 1, 0);
         if (rc == -1)
         {
             printf("error");
         }
-      
-        n = recvfrom(sockfd, (char *)buffer, MAXLINE,
-                         MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
-        buffer[n] = '\0';
-        printf("%s\n",buffer);
+        if(rc >0){
+            printf("hello\n");
+            n = recvfrom(sockfd, (char *)buffer, MAXLINE,
+                                MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
+            buffer[n] = '\0';
+            printf("%s\n",buffer);
+        }
         
     }
     pthread_join(thread_id, NULL);
