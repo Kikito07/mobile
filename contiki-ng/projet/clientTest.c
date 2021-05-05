@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
+#include "/home/lahousse/contiki-ng/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
   
 #define PORT 3000
 #define MAXLINE 1024
@@ -81,7 +81,7 @@ int main() {
                 MSG_WAITALL, (struct sockaddr *) &servaddr,
                 &len);
     buffer[n] = '\0';
-    printf("Server : %s\n", buffer);
+    // printf("Server : %s\n", buffer);
   
     close(sockfd);
     return 0;

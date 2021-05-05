@@ -28,8 +28,9 @@ int main() {
     pkt_t* pkt = pkt_new();
     char buf[5];
     post_types_t post_type = PTYPE_LIGHT_OFF;
-    uint8_t temp = 12;
-    ptypes_t type = PTYPE_POST;
+    uint16_t temp = 18;
+    ptypes_t type = PTYPE_GET;
+    warmer_types_t warm = PTYPE_THERM;
     const uint8_t msgid = 1;
     
 
@@ -37,7 +38,7 @@ int main() {
         return -1;
     }
 
-    if(PKT_OK != pkt_set_payload(pkt, (const char*)&temp,2)){
+    if(PKT_OK != pkt_set_payload(pkt, (const char*)&warm,2)){
         return -1;
     }
  
@@ -77,12 +78,24 @@ int main() {
     }
 
     printf("Hello message sent.\n");
-          
-    n = recvfrom(sockfd, (char *)buffer, MAXLINE, 
+       
+    // n = recvfrom(sockfd, (char *)buffer, MAXLINE, 
+    //             MSG_WAITALL, (struct sockaddr *) &servaddr,
+    //             &len);
+    // buffer[n] = '\0';
+    printf("Hello message sent1.\n");
+    n = recvfrom(sockfd, buf, MAXLINE, 
                 MSG_WAITALL, (struct sockaddr *) &servaddr,
                 &len);
-    buffer[n] = '\0';
-    // printf("Server : %s\n", buffer);
+    
+    // buffer[n] = '\0';
+    // printf("Server : %s\n", *buffer);
+    
+    if(PKT_OK != pkt_decode( buf,5,pkt)){
+        return -1;
+    }
+    uint16_t yoland = (uint16_t)*pkt_get_payload(pkt);
+    printf("la température est de : %u \n", yoland);
   
     close(sockfd);
     return 0;

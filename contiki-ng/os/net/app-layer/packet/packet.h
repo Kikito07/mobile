@@ -22,6 +22,11 @@ typedef enum {
   PTYPE_SENSOR = 2,
 } get_types_t;
 
+typedef enum{
+  PTYPE_SENS = 1,
+  PTYPE_THERM = 2,
+} warmer_types_t;
+
 /*   types de post packet */
 typedef enum {
   PTYPE_LIGHT_ON = 1,
