@@ -7,7 +7,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
-  
+#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/list.h"
+#include <poll.h>
+#include <pthread.h>
+
 #define PORT 3000
 #define MAXLINE 1024
 
@@ -17,81 +20,115 @@
 #define NODE3ADDR "bbbb::c30c:0:0:3"
 #define NODE4ADDR "bbbb::c30c:0:0:4"
 
-  
-// Driver code
-int main() {
-    
-    char *buffer[MAXLINE];
-    int sockfd;
-    char* data = "hello";
-    int number = 127;
-    struct sockaddr_in6 servaddr;
-    pkt_t* pkt = pkt_new();
-    char buf[5];
-    post_types_t post_type = PTYPE_LIGHT_ON;
-    ptypes_t type = PTYPE_POST;
-    const uint8_t msgid = 1;
-    
-    while(true){
-        char string [256];
-        printf ("Insert your command : \n");
-        gets (string);
-        printf ("Your address is: %s\n",string);
+char *buffer[MAXLINE];
+int sockfd;
+int number = 127;
+struct sockaddr_in6 servaddr;
+char buf[5];
+post_types_t post_type = PTYPE_LIGHT_ON;
+ptypes_t type = PTYPE_POST;
+const uint8_t msgid = 1;
+pkt_t *pkt;
+struct pollfd fds[1];
+list_t *list;
 
-        if(strcmp(string,"test") == 0){
-            if(PKT_OK != pkt_set_type(pkt,type)){
-                return -1;
+void *inputThread(void *empty)
+{
+    char string[256];
+
+    while (true)
+    {
+        printf("insert your command : \n");
+        gets(string);
+        int init_size = strlen(string);
+        char delim[] = " ";
+        char *device = strtok(string, delim);
+        char *action = strtok(NULL, delim);
+        printf("device : %s\n", device);
+        printf("action : %s\n", action);
+        if (strcmp(device, "lamp") == 0)
+        {
+
+            if (strcmp(action, "turnon") == 0)
+            {
+                post_type = PTYPE_LIGHT_ON;
+            }
+            else if (strcmp(action, "turnoff") == 0)
+            {
+
+                post_type = PTYPE_LIGHT_OFF;
             }
 
-            if(PKT_OK != pkt_set_payload(pkt, (const char*)&post_type,2)){
-                return -1;
-            }
-        
-            if(PKT_OK != pkt_set_msgid(pkt,msgid)){
-                return -1;
-            }
+            pkt = pkt_new();
 
-            if(PKT_OK != pkt_encode(pkt, buf)){
-                return -1;
-            }
-            // Creating socket file descriptor
-            if ( (sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0 ) {
-                perror("socket creation failed");
-                exit(EXIT_FAILURE);
-            }
-        
-            memset(&servaddr, 0, sizeof(servaddr));
-            
-            // Filling server information
-            servaddr.sin6_family = AF_INET6;
-            servaddr.sin6_port = htons(PORT);
-            int err;
-            err = inet_pton(AF_INET6,NODE1ADDR,&servaddr.sin6_addr);
-            if(err <= 0){
-                printf("error");
-            }
-            int n, len;
-        
+            pkt_set_type(pkt, type);
 
+            pkt_set_payload(pkt, (const char *)&post_type, 2);
+
+            pkt_set_msgid(pkt, msgid);
+
+            pkt_encode(pkt, buf);
+
+            int n, len, err;
+            insertFirst(*pkt,list);
             err = sendto(sockfd, buf, sizeof(int),
-                MSG_CONFIRM, (const struct sockaddr *) &servaddr, 
-                    sizeof(servaddr));
-
-            if(err < 0){
+                         MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                         sizeof(servaddr));
+            if (err < 0)
+            {
                 perror("Error printed by perror");
             }
 
-            printf("Hello message sent.\n");
-                
-            n = recvfrom(sockfd, (char *)buffer, MAXLINE, 
-                        MSG_WAITALL, (struct sockaddr *) &servaddr,
-                        &len);
-            buffer[n] = '\0';
-            printf("Server : %s\n", buffer);
-        
-            close(sockfd);
-
-                }
+        }
     }
-return 0;
+}
+
+int main()
+{
+    list = init_list();
+    if(list == NULL){
+        printf("malloc failed");
+    }
+
+    if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
+    {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin6_family = AF_INET6;
+    servaddr.sin6_port = htons(PORT);
+    int err;
+    err = inet_pton(AF_INET6, NODE1ADDR, &servaddr.sin6_addr);
+
+    if (err <= 0)
+    {
+        printf("error");
+    }
+    fds[0].fd = sockfd;
+    fds[0].events = POLLIN;
+
+    pthread_t thread_id;
+    printf("Before Thread\n");
+    pthread_create(&thread_id, NULL, inputThread, NULL);
+
+    int n, len, rc;
+    while (true)
+    {
+        rc = poll(fds, 1, 0);
+        if (rc == -1)
+        {
+            printf("error");
+        }
+        if (rc > 0)
+        {
+            n = recvfrom(sockfd, (char *)buffer, MAXLINE,
+                         MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
+            buffer[n] = '\0';
+        }
+    }
+    pthread_join(thread_id, NULL);
+    printf("After Thread\n");
+
+    return 0;
 }
