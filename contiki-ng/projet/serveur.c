@@ -28,7 +28,7 @@ post_types_t post_type = PTYPE_LIGHT_ON;
 ptypes_t type = PTYPE_POST;
 const uint8_t msgid = 1;
 pkt_t *pkt;
-struct pollfd fds[10];
+struct pollfd fds[1];
 
 void *inputThread(void *empty)
 {
@@ -36,12 +36,29 @@ void *inputThread(void *empty)
 
     while (true)
     {
-        printf("Insert your command : \n");
+        printf("insert your command : \n");
         gets(string);
-        printf("Your message is: %s\n", string);
-        pkt = pkt_new();
-        if (strcmp(string, "test") == 0)
+        int init_size = strlen(string);
+        char delim[] = " ";
+        char *device = strtok(string, delim);
+        char *action = strtok(NULL, delim);
+        printf("device : %s\n", device);
+        printf("action : %s\n", action);
+        if (strcmp(device, "lamp") == 0)
         {
+
+            if (strcmp(action, "turnon") == 0)
+            {
+                post_type = PTYPE_LIGHT_ON;
+            }
+            else if (strcmp(action, "turnoff") == 0)
+            {
+
+                post_type = PTYPE_LIGHT_OFF;
+            }
+
+            pkt = pkt_new();
+
             pkt_set_type(pkt, type);
 
             pkt_set_payload(pkt, (const char *)&post_type, 2);
@@ -60,8 +77,6 @@ void *inputThread(void *empty)
                 perror("Error printed by perror");
             }
 
-            printf("Hello message sent.\n");
-
         }
     }
 }
@@ -79,6 +94,7 @@ int main()
     servaddr.sin6_port = htons(PORT);
     int err;
     err = inet_pton(AF_INET6, NODE1ADDR, &servaddr.sin6_addr);
+
     if (err <= 0)
     {
         printf("error");
@@ -93,20 +109,17 @@ int main()
     int n, len, rc;
     while (true)
     {
-       
         rc = poll(fds, 1, 0);
         if (rc == -1)
         {
             printf("error");
         }
-        if(rc >0){
-            printf("hello\n");
+        if (rc > 0)
+        {
             n = recvfrom(sockfd, (char *)buffer, MAXLINE,
-                                MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
+                         MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
             buffer[n] = '\0';
-            printf("%s\n",buffer);
         }
-        
     }
     pthread_join(thread_id, NULL);
     printf("After Thread\n");
