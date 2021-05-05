@@ -70,7 +70,7 @@ void *inputThread(void *empty)
             pkt_encode(pkt, buf);
 
             int n, len, err;
-
+            insertFirst(*pkt,list);
             err = sendto(sockfd, buf, sizeof(int),
                          MSG_CONFIRM, (const struct sockaddr *)&servaddr,
                          sizeof(servaddr));
