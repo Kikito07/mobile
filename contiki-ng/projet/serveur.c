@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
+#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/list.h"
 #include <poll.h>
 #include <pthread.h>
 
@@ -29,6 +30,7 @@ ptypes_t type = PTYPE_POST;
 const uint8_t msgid = 1;
 pkt_t *pkt;
 struct pollfd fds[1];
+list_t *list;
 
 void *inputThread(void *empty)
 {
@@ -83,6 +85,10 @@ void *inputThread(void *empty)
 
 int main()
 {
+    list = init_list();
+    if(list == NULL){
+        printf("malloc failed");
+    }
 
     if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
     {
