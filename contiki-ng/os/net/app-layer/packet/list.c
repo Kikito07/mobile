@@ -33,13 +33,15 @@ void printList(list_t *list)
 }
 
 //insert link at the first location
-void insertFirst(pkt_t pkt, list_t *list)
+void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr)
 {
     node_t *head = list->head;
     //create a link
     node_t *link = (node_t *)malloc(sizeof(node_t));
 
     link->pkt = pkt;
+
+    link-> addr = addr; 
 
     //point it to old first node
     link->next = head;

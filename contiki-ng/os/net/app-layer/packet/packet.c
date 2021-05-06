@@ -16,15 +16,28 @@ void pkt_del(pkt_t *pkt) { free(pkt); }
 pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
 
   uint8_t header = *data;
+  int index = 0;
 
-  pkt_set_type(pkt, (ptypes_t)header >> 6);
+  pkt_set_code(pkt, (ptypes_t)header >> 2);
 
-  header = header << 2;
-  header = header >> 2;
+  uint8_t ack = header;
+  uint8_t qr = header;
+  ack  = ack >> 1;
+  ack = ack << 7;
+  ack = ack >> 7;
+
+  pkt_set_ack(pkt,ack);
+
+  qr = qr << 7;
+  qr = qr >> 7;
   
-  pkt_set_msgid(pkt, header);
-  
-  pkt_set_payload(pkt,(data + 1),2);
+  pkt_set_query(pkt,qr);
+  index++;
+  pkt_set_msgid(pkt, (data+index));
+  index++;
+  pkt_get_token(pkt,(data+index));
+  index++;
+  pkt_set_payload(pkt,(data+index),2);
 
   return PKT_OK;
 }
@@ -32,18 +45,30 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
 pkt_status_code pkt_encode(const pkt_t *pkt, char *buf) {
 
   int index = 0;
-  *buf  = pkt_get_type(pkt) << 6;
-  *buf |= pkt_get_msgid(pkt);
+  *buf  = pkt_get_code(pkt) << 2;
+  *buf |= pkt_get_ack(pkt)<<1;
+  *buf |= pkt_get_query(pkt);
   index++;
-
+  *(buf+index) = pkt_get_msgid(pkt);
+  index++;
+  *(buf+index) = pkt_get_token(pkt);
+  index++;
   char *pl = (char *)(pkt_get_payload(pkt));
   memcpy((buf + index), pl, 2);
   return PKT_OK;
 }
 
-ptypes_t pkt_get_type(const pkt_t *pkt) { return (pkt->type); }
+
+
+ptypes_t pkt_get_code(const pkt_t *pkt) { return (pkt->code); }
+
+uint8_t pkt_get_ack(const pkt_t *pkt) {return (pkt->ack); }
+
+query_t pkt_get_query(const pkt_t *pkt) {return (pkt->qr); }
 
 uint8_t pkt_get_msgid(const pkt_t *pkt) { return pkt->msgid; }
+
+uint8_t pkt_get_token(const pkt_t *pkt) {return (pkt->token); }
 
 const char *pkt_get_payload(const pkt_t *pkt) { return pkt->payload; }
 

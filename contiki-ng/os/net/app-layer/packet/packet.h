@@ -7,14 +7,17 @@
 #include <time.h>
 #include <stdbool.h>
 
+typedef enum{
+  QUERY = 0,
+  RESP = 1,
+} query_t;
+
 /* Types de paquets */
 typedef enum {
   PTYPE_GET = 1,
   PTYPE_POST = 2,
   PTYPE_ACK = 3,
 } ptypes_t;
-
-
 
 /*   types de get packet */
 typedef enum {
@@ -37,8 +40,11 @@ typedef enum {
 #define MAX_PAYLOAD_SIZE 2
 /* Valeur de retours des fonctions */
 typedef struct __attribute__((__packed__)) pkt {
-  ptypes_t type;
+  ptypes_t code;
   uint8_t msgid;
+  uint8_t ack;
+  query_t qr;
+  uint8_t token;
   char payload[2];
 } pkt_t;
 
@@ -63,13 +69,21 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt);
 
 pkt_status_code pkt_encode(const pkt_t *, char *buf);
 
-ptypes_t pkt_get_type(const pkt_t *);
+
+ptypes_t pkt_get_code(const pkt_t *);
+
+uint8_t pkt_get_ack(const pkt_t *pkt) ;
+
+query_t pkt_get_query(const pkt_t *pkt) ;
 
 uint8_t pkt_get_msgid(const pkt_t *);
 
+uint8_t pkt_get_token(const pkt_t *pkt);
+
 const char *pkt_get_payload(const pkt_t *);
 
-pkt_status_code pkt_set_type(pkt_t *, const ptypes_t type);
+
+pkt_status_code pkt_set_code(pkt_t *, const ptypes_t type);
 
 pkt_status_code pkt_set_msgid(pkt_t *, const uint8_t seqnum);
 

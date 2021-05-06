@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
-#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/list.h"
+#include "/home/lahousse/contiki-ng/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
+#include "/home/lahousse/contiki-ng/mobile/contiki-ng/os/net/app-layer/packet/list.h"
 #include <poll.h>
 #include <pthread.h>
 
@@ -25,19 +25,35 @@ int sockfd;
 int number = 127;
 struct sockaddr_in6 servaddr;
 char buf[5];
+char bufMain[5];
 post_types_t post_type = PTYPE_LIGHT_ON;
 ptypes_t type = PTYPE_POST;
 const uint8_t msgid = 1;
 pkt_t *pkt;
 struct pollfd fds[1];
 list_t *list;
+struct sockaddr_in6 servaddrToSend;
+
+void handlePacket(b){
+    pkt_t pktHandle ;
+    if(PKT_OK != pkt_decode( b,5,&pktHandle)){
+        return -1;
+    }
+
+}
 
 void *inputThread(void *empty)
 {
     char string[256];
 
     while (true)
-    {
+    {   
+
+        memset(&servaddrToSend, 0, sizeof(servaddrToSend));
+        servaddrToSend.sin6_family = AF_INET6;
+        servaddrToSend.sin6_port = htons(PORT);
+        int err;
+        
         printf("insert your command : \n");
         gets(string);
         int init_size = strlen(string);
@@ -51,12 +67,35 @@ void *inputThread(void *empty)
 
             if (strcmp(action, "turnon") == 0)
             {
+                printf("ici moja \n");
                 post_type = PTYPE_LIGHT_ON;
+
+                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
+                if (err <= 0){
+                    printf("error");
+                }
             }
             else if (strcmp(action, "turnoff") == 0)
             {
 
                 post_type = PTYPE_LIGHT_OFF;
+
+                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
+                if (err <= 0){
+                    printf("error");
+                }
+            }
+
+            else if (strcmp(action, "turnoff") == 0)
+            {
+
+                post_type = PTYPE_LIGHT_OFF;
+
+                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
+                if (err <= 0){
+                    printf("error");
+                }
+            
             }
 
             pkt = pkt_new();
@@ -70,9 +109,9 @@ void *inputThread(void *empty)
             pkt_encode(pkt, buf);
 
             int n, len, err;
-            insertFirst(*pkt,list);
+            insertFirst(*pkt,list,servaddrToSend);
             err = sendto(sockfd, buf, sizeof(int),
-                         MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                         MSG_CONFIRM, (const struct sockaddr *)&servaddrToSend,
                          sizeof(servaddr));
             if (err < 0)
             {
@@ -122,9 +161,11 @@ int main()
         }
         if (rc > 0)
         {
-            n = recvfrom(sockfd, (char *)buffer, MAXLINE,
+            n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
                          MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
-            buffer[n] = '\0';
+            bufMain[n] = '\0';
+            handlePacket(bufMain);
+
         }
     }
     pthread_join(thread_id, NULL);
