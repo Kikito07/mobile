@@ -20,3 +20,5 @@ typedef struct List // list structure
 
 
 
+void insertFirst(pkt_t pkt, list_t *list);
+list_t *init_list();
