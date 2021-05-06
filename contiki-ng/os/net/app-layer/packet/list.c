@@ -148,26 +148,26 @@ node_t *delete (uint8_t msgid, list_t *list)
     return current;
 }
 
-void main()
-{
-    list_t *list = init_list();
-    pkt_t pkt1;
-    pkt_t pkt2;
-    uint16_t len = 2;
-    char message1[] = "a";
-    char message2[] = "b";
-    uint8_t msgid1 = 1;
-    uint8_t msgid2 = 2;
-    pkt_set_payload(&pkt1, (const char *)(&message1), 2);
-    pkt_set_payload(&pkt2, (const char *)(&message2), 2);
-    pkt_set_msgid(&pkt1,msgid1);
-    pkt_set_msgid(&pkt2,msgid2);
+// void main()
+// {
+//     list_t *list = init_list();
+//     pkt_t pkt1;
+//     pkt_t pkt2;
+//     uint16_t len = 2;
+//     char message1[] = "a";
+//     char message2[] = "b";
+//     uint8_t msgid1 = 1;
+//     uint8_t msgid2 = 2;
+//     pkt_set_payload(&pkt1, (const char *)(&message1), 2);
+//     pkt_set_payload(&pkt2, (const char *)(&message2), 2);
+//     pkt_set_msgid(&pkt1,msgid1);
+//     pkt_set_msgid(&pkt2,msgid2);
 
-    insertFirst(pkt1, list);
-    insertFirst(pkt2, list);
+//     insertFirst(pkt1, list);
+//     insertFirst(pkt2, list);
 
-    printList(list);
-    delete(msgid1,list);
-    printf("============\n");
-    printList(list);
-}
+//     printList(list);
+//     delete(msgid1,list);
+//     printf("============\n");
+//     printList(list);
+// }
