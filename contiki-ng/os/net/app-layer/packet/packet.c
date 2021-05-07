@@ -33,9 +33,9 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
   
   pkt_set_query(pkt,qr);
   index++;
-  pkt_set_msgid(pkt, (data+index));
+  pkt_set_msgid(pkt, *(data+index));
   index++;
-  pkt_get_token(pkt,(data+index));
+  pkt_set_token(pkt,(data+index));
   index++;
   pkt_set_payload(pkt,(data+index),2);
 
@@ -60,6 +60,16 @@ pkt_status_code pkt_encode(const pkt_t *pkt, char *buf) {
 
 
 
+int pkt_set_token(const pkt_t *pkt,const char* c){
+  return 1;
+}
+int pkt_set_ack(const pkt_t *pkt,uint8_t ack){
+  return 1;
+}
+int pkt_set_query(const pkt_t *pkt,uint8_t qr){
+  return 1;
+}
+
 ptypes_t pkt_get_code(const pkt_t *pkt) { return (pkt->code); }
 
 uint8_t pkt_get_ack(const pkt_t *pkt) {return (pkt->ack); }
@@ -72,12 +82,12 @@ uint8_t pkt_get_token(const pkt_t *pkt) {return (pkt->token); }
 
 const char *pkt_get_payload(const pkt_t *pkt) { return pkt->payload; }
 
-pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type) {
+pkt_status_code pkt_set_code(pkt_t *pkt, const ptypes_t type) {
   // veryfing that type argument is valid
   if (type != PTYPE_GET && type != PTYPE_ACK && type != PTYPE_POST) {
     return E_TYPE;
   }
-  pkt->type = type;
+  pkt->code = type;
   return PKT_OK;
 }
 

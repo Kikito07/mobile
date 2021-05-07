@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "/home/lahousse/contiki-ng/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
-#include "/home/lahousse/contiki-ng/mobile/contiki-ng/os/net/app-layer/packet/list.h"
+#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
+#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/list.h"
 #include <poll.h>
 #include <pthread.h>
 
@@ -20,6 +20,7 @@
 #define NODE3ADDR "bbbb::c30c:0:0:3"
 #define NODE4ADDR "bbbb::c30c:0:0:4"
 
+//bbbb::1 => serveur addr
 char *buffer[MAXLINE];
 int sockfd;
 int number = 127;
@@ -100,7 +101,7 @@ void *inputThread(void *empty)
 
             pkt = pkt_new();
 
-            pkt_set_type(pkt, type);
+            pkt_set_code(pkt, type);
 
             pkt_set_payload(pkt, (const char *)&post_type, 2);
 

@@ -56,7 +56,7 @@ handle_packet()
     {
         printf("packet received but encode fail");
     }
-    if (pkt_get_type(&pkt) == PTYPE_POST)
+    if (pkt_get_code(&pkt) == PTYPE_POST)
     {
         const char *payload = pkt_get_payload(&pkt);
         post_types_t post_type = payload[0];
@@ -69,7 +69,7 @@ handle_packet()
             leds_off(LEDS_RED);
         }
     }
-    pkt_set_type(&pkt, PTYPE_ACK);
+    pkt_set_code(&pkt, PTYPE_ACK);
     pkt_encode(&pkt, buf);
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
     server_conn->rport = UIP_UDP_BUF->srcport;
@@ -86,6 +86,8 @@ tcpip_handler(void)
     {
         len = uip_datalen();
         memcpy(buf, uip_appdata, len);
+        PRINTF("%u bytes from [", len);
+        PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
         handle_packet();
         printf("packet : %u", *buf);
     #if SERVER_REPLY
@@ -170,10 +172,9 @@ void create_dag()
 
 PROCESS_THREAD(udp_server_process, ev, data)
 {
-
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
-
+    
     // leds_toogle(LEDS_BLUE);
 
 #if SERVER_RPL_ROOT
@@ -183,6 +184,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     udp_bind(server_conn, UIP_HTONS(3000));
 
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
+
 
     while (1)
     {
