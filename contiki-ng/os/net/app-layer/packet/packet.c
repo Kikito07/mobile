@@ -35,7 +35,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
   index++;
   pkt_set_msgid(pkt, *(data+index));
   index++;
-  pkt_set_token(pkt,(data+index));
+  pkt_set_token(pkt,*(data+index));
   index++;
   pkt_set_payload(pkt,(data+index),2);
 
@@ -59,15 +59,17 @@ pkt_status_code pkt_encode(const pkt_t *pkt, char *buf) {
 }
 
 
-
-int pkt_set_token(const pkt_t *pkt,const char* c){
-  return 1;
+pkt_status_code pkt_set_token(pkt_t *pkt,uint8_t token){
+  pkt->token = token;
+  return PKT_OK;
 }
-int pkt_set_ack(const pkt_t *pkt,uint8_t ack){
-  return 1;
+pkt_status_code pkt_set_ack(pkt_t *pkt,uint8_t ack){
+  pkt->ack = ack;
+  return PKT_OK;
 }
-int pkt_set_query(const pkt_t *pkt,uint8_t qr){
-  return 1;
+pkt_status_code pkt_set_query(pkt_t *pkt,uint8_t qr){
+  pkt->qr = qr;
+  return PKT_OK;
 }
 
 ptypes_t pkt_get_code(const pkt_t *pkt) { return (pkt->code); }

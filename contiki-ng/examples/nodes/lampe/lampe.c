@@ -63,6 +63,9 @@ handle_packet()
         if (post_type == PTYPE_LIGHT_ON)
         {
             leds_on(LEDS_RED);
+            uint8_t one = 1;
+            pkt_set_ack(&pkt,one);
+            PRINTF("ack : %u\n",pkt_get_ack(&pkt));
         }
         if (post_type == PTYPE_LIGHT_OFF)
         {

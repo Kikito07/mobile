@@ -25,7 +25,7 @@ void printList(list_t *list)
     //start from the beginning
     while (ptr != NULL)
     {
-        printf("%s\n", (ptr->pkt.payload));
+        printf("%u\n", (ptr->pkt.msgid));
         ptr = ptr->next;
     }
 
@@ -104,7 +104,7 @@ node_t *find(uint8_t msgid, list_t *list)
 }
 
 //delete a link with given key
-node_t *delete (uint8_t msgid, list_t *list)
+node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
 {
 
     node_t *head = list->head;
@@ -118,7 +118,7 @@ node_t *delete (uint8_t msgid, list_t *list)
     }
 
     //navigate through list
-    while (current->pkt.msgid != msgid)
+    while ((current->pkt.msgid != msgid) && (current->pkt.token != token))
     {
 
         //if it is last node
@@ -139,7 +139,7 @@ node_t *delete (uint8_t msgid, list_t *list)
     if (current == head)
     {
         //change first to point to next link
-        head = head->next;
+        list->head = head->next;
     }
     else
     {
@@ -165,11 +165,18 @@ node_t *delete (uint8_t msgid, list_t *list)
 //     pkt_set_msgid(&pkt1,msgid1);
 //     pkt_set_msgid(&pkt2,msgid2);
 
-//     insertFirst(pkt1, list);
-//     insertFirst(pkt2, list);
+//     pkt_set_token(&pkt1,msgid1);
 
+//     pkt_set_token(&pkt2,msgid2);
+//     struct sockaddr_in6 addr;
+//     insertFirst(pkt1, list,addr);
+//     insertFirst(pkt2, list,addr);
 //     printList(list);
-//     delete(msgid1,list);
+//     delete(msgid1,msgid1,list);
 //     printf("============\n");
 //     printList(list);
+//     printf("============\n");
+//     delete(msgid2,msgid2,list);
+//     printList(list);
+    
 // }

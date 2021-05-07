@@ -90,10 +90,9 @@ pkt_status_code pkt_set_msgid(pkt_t *, const uint8_t seqnum);
 pkt_status_code pkt_set_payload(pkt_t *, const char *data,
                                 const uint16_t length);
 
-int pkt_set_token(const pkt_t *pkt,const char* c);
-
-int pkt_set_ack(const pkt_t *pkt,uint8_t ack);
-int pkt_set_query(const pkt_t *pkt,uint8_t qr);
+pkt_status_code pkt_set_token(pkt_t *pkt,uint8_t token);
+pkt_status_code pkt_set_ack(pkt_t *pkt,uint8_t ack);
+pkt_status_code pkt_set_query(pkt_t *pkt,uint8_t qr);
 
 
 

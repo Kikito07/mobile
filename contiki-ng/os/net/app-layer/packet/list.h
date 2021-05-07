@@ -21,6 +21,7 @@ typedef struct List // list structure
 } list_t;
 
 
-
+void printList(list_t *list);
 void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr);
 list_t *init_list();
+node_t *delete (uint8_t msgid, uint8_t token, list_t *list);

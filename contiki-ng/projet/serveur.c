@@ -28,22 +28,40 @@ struct sockaddr_in6 nodeAddr;
 struct sockaddr_in6 myaddress;
 char buf[5];
 char bufMain[5];
-post_types_t post_type = PTYPE_LIGHT_ON;
-ptypes_t type = PTYPE_POST;
-const uint8_t msgid = 1;
+uint8_t msgid = 1;
 pkt_t *pkt;
 struct pollfd fds[1];
 list_t *list;
 struct sockaddr_in6 servaddrToSend;
 
+
+int ackRoutine(pkt_t pkt_routine){
+    printf("hello\n");
+    uint8_t one = 1;
+    printf("receive ack : %u\n", pkt_get_ack(&pkt_routine));
+    if(pkt_get_ack(&pkt_routine)==one){
+        printf("je  suis rentreeeee \n");
+        uint8_t id = pkt_get_msgid(&pkt_routine);
+        printf("j'ai planté ici les mouks \n");
+        uint8_t token = pkt_get_token(&pkt_routine);
+        printf("j'ai planté ici les mouks2 \n");
+        printf("received id : %u\n",id);
+        printf("receive token : %u\n", token);
+    
+        delete (id, token, list);
+    }
+}
+
+
 int handlePacket(char* b){
+
     pkt_t pktHandle ;
     if(PKT_OK != pkt_decode(b,5,&pktHandle)){
         return -1;
     }
+    ackRoutine(pktHandle);
 
 }
-
 void *inputThread(void *empty)
 {
     char string[256];
@@ -66,12 +84,12 @@ void *inputThread(void *empty)
         printf("action : %s\n", action);
         if (strcmp(device, "lamp") == 0)
         {
+            post_types_t post_type = PTYPE_LIGHT_ON;
+            ptypes_t type = PTYPE_POST;
 
             if (strcmp(action, "turnon") == 0)
             {
-                printf("ici moja \n");
                 post_type = PTYPE_LIGHT_ON;
-
                 err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
                 if (err <= 0){
                     printf("error");
@@ -87,31 +105,26 @@ void *inputThread(void *empty)
                     printf("error");
                 }
             }
-
-            else if (strcmp(action, "turnoff") == 0)
-            {
-
-                post_type = PTYPE_LIGHT_OFF;
-
-                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
-                if (err <= 0){
-                    printf("error");
-                }
             
-            }
+
 
             pkt = pkt_new();
+
+            uint8_t tok = 2;
+            pkt_set_token(pkt,tok);
 
             pkt_set_code(pkt, type);
 
             pkt_set_payload(pkt, (const char *)&post_type, 2);
 
             pkt_set_msgid(pkt, msgid);
+            msgid++;
 
             pkt_encode(pkt, buf);
-
             int n, len, err;
             insertFirst(*pkt,list,servaddrToSend);
+
+            
             err = sendto(sockfd, buf, sizeof(int),
                          MSG_CONFIRM, (const struct sockaddr *)&servaddrToSend,
                          sizeof(nodeAddr));
@@ -120,6 +133,10 @@ void *inputThread(void *empty)
                 perror("Error printed by perror");
             }
 
+        }
+        else if((strcmp(device, "list") == 0)){
+            printList(list);
+            printf("\n");
         }
     }
 }
@@ -177,7 +194,7 @@ int main()
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
                          MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
-            printf("ret %s\n",bufMain);
+            // printf("ret %s\n",bufMain);
             handlePacket(bufMain);
 
         }
