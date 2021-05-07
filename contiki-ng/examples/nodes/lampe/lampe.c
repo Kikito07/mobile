@@ -30,14 +30,16 @@ static uint16_t len;
 /* Should we act as RPL root? */
 #define SERVER_RPL_ROOT 0
 
-#if SERVER_RPL_ROOT
-static uip_ipaddr_t ipaddr;
-#endif
+static uip_ipaddr_t ipServAddr;
+
 
 /*---------------------------------------------------------------------------*/
 
 PROCESS(udp_server_process, "UDP server process");
+PROCESS(boot_process, "boot process");
+
 AUTOSTART_PROCESSES(&udp_server_process);
+AUTOSTART_PROCESSES(&boot_process);
 
 /*---------------------------------------------------------------------------*/
 
@@ -171,6 +173,17 @@ void create_dag()
 
 /*---------------------------------------------------------------------------*/
 
+PROCESS_THREAD(boot_process, ev, data){
+    PROCESS_BEGIN();
+
+    PROCESS_END();
+
+
+}
+
+
+
+
 PROCESS_THREAD(udp_server_process, ev, data)
 {
     PROCESS_BEGIN();
@@ -181,17 +194,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
 #if SERVER_RPL_ROOT
     create_dag();
 #endif
-
-
-
     
-    
-    
-    // PROCESS_BEGIN();
-    // while(1){
-    //     
-    // }
-    // PROCESS_END();
 
     server_conn = udp_new(NULL, UIP_HTONS(0), NULL);
     udp_bind(server_conn, UIP_HTONS(3000));
@@ -212,7 +215,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
             // uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
             // PRINT6ADDR(&ipaddr);
             // PRINTF("\n");
-            // server_conn = udp_new(&ipaddr, UIP_HTONS(37600), NULL);
+            // server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
             // uip_udp_packet_send(server_conn, msg, msglen);
             // uip_create_unspecified(&server_conn->ripaddr);
             // server_conn->rport = 0;
