@@ -24,7 +24,8 @@
 char *buffer[MAXLINE];
 int sockfd;
 int number = 127;
-struct sockaddr_in6 servaddr;
+struct sockaddr_in6 nodeAddr;
+struct sockaddr_in6 myaddress;
 char buf[5];
 char bufMain[5];
 post_types_t post_type = PTYPE_LIGHT_ON;
@@ -113,7 +114,7 @@ void *inputThread(void *empty)
             insertFirst(*pkt,list,servaddrToSend);
             err = sendto(sockfd, buf, sizeof(int),
                          MSG_CONFIRM, (const struct sockaddr *)&servaddrToSend,
-                         sizeof(servaddr));
+                         sizeof(nodeAddr));
             if (err < 0)
             {
                 perror("Error printed by perror");
@@ -135,11 +136,22 @@ int main()
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin6_family = AF_INET6;
-    servaddr.sin6_port = htons(PORT);
+    
+    myaddress.sin6_family = AF_INET6;
+    myaddress.sin6_addr = in6addr_any;
+    myaddress.sin6_port = htons( PORT );
+    if (bind(sockfd, (struct sockaddr *)& myaddress, sizeof(myaddress))<0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+
+    memset(&nodeAddr, 0, sizeof(nodeAddr));
+    nodeAddr.sin6_family = AF_INET6;
+    nodeAddr.sin6_port = htons(PORT);
     int err;
-    err = inet_pton(AF_INET6, NODE1ADDR, &servaddr.sin6_addr);
+    err = inet_pton(AF_INET6, NODE1ADDR, &nodeAddr.sin6_addr);
 
     if (err <= 0)
     {
@@ -163,8 +175,9 @@ int main()
         if (rc > 0)
         {
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
-                         MSG_WAITALL, (struct sockaddr *)&servaddr, &len);
+                         MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
+            printf("ret %s\n",bufMain);
             handlePacket(bufMain);
 
         }

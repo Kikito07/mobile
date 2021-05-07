@@ -88,6 +88,7 @@ tcpip_handler(void)
         memcpy(buf, uip_appdata, len);
         PRINTF("%u bytes from [", len);
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
+        PRINTF("]:%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
         handle_packet();
         printf("packet : %u", *buf);
     #if SERVER_REPLY
@@ -180,26 +181,41 @@ PROCESS_THREAD(udp_server_process, ev, data)
 #if SERVER_RPL_ROOT
     create_dag();
 #endif
+
+
+
+    
+    
+    
+    // PROCESS_BEGIN();
+    // while(1){
+    //     
+    // }
+    // PROCESS_END();
+
     server_conn = udp_new(NULL, UIP_HTONS(0), NULL);
     udp_bind(server_conn, UIP_HTONS(3000));
-
+    
+    
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
-
+    PRINTF("hello\n");
 
     while (1)
     {
         PROCESS_YIELD();
         if (ev == tcpip_event)
         {
-
-            // leds_toggle(LEDS_GREEN);
-            // leds_toggle(LEDS_RED);
-            // leds_toggle(LEDS_BLUE);
-            // leds_on(LEDS_GREEN);
-            // leds_on(LEDS_RED);
-            // leds_on(LEDS_BLUE);
-            // leds_on(LEDS_GREEN);
-
+            // PRINTF("hello\n");
+            // char msg[] = "hello guys\n";
+            // uint16_t msglen = sizeof(msg);
+            // uip_ipaddr_t ipaddr;
+            // uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
+            // PRINT6ADDR(&ipaddr);
+            // PRINTF("\n");
+            // server_conn = udp_new(&ipaddr, UIP_HTONS(37600), NULL);
+            // uip_udp_packet_send(server_conn, msg, msglen);
+            // uip_create_unspecified(&server_conn->ripaddr);
+            // server_conn->rport = 0;
             tcpip_handler();
         }
     }
