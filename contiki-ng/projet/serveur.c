@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/packet.h"
-#include "/mnt/C072C89972C89616/school/embedded/mobile/contiki-ng/os/net/app-layer/packet/list.h"
+#include "../os/net/app-layer/packet/packet.h"
+#include "../os/net/app-layer/packet/list.h"
 #include <poll.h>
 #include <pthread.h>
 
@@ -35,9 +35,9 @@ struct pollfd fds[1];
 list_t *list;
 struct sockaddr_in6 servaddrToSend;
 
-void handlePacket(b){
+int handlePacket(char* b){
     pkt_t pktHandle ;
-    if(PKT_OK != pkt_decode( b,5,&pktHandle)){
+    if(PKT_OK != pkt_decode(b,5,&pktHandle)){
         return -1;
     }
 
