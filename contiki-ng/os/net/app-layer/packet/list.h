@@ -2,6 +2,7 @@
 #include "stdbool.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 
 typedef struct node {
    pkt_t pkt;
@@ -14,14 +15,13 @@ typedef struct List // list structure
 {
   node_t *head; // head of list
   node_t *last;  // tail of list
-  int size;      // number of element in list
-  int window;    // window of the reseau
-  bool marker;
-  unsigned long r_timer;
+  int sockfd;
+  int r_timer;
 } list_t;
 
 
 void printList(list_t *list);
 void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr);
-list_t *init_list();
+list_t *init_list(int socket,int r_timer);
 node_t *delete (uint8_t msgid, uint8_t token, list_t *list);
+int reTransmit(list_t *list,int timer);

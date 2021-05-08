@@ -10,6 +10,7 @@
 #include "../os/net/app-layer/packet/list.h"
 #include <poll.h>
 #include <pthread.h>
+#include <time.h>
 
 #define PORT 3000
 #define MAXLINE 1024
@@ -35,31 +36,39 @@ list_t *list;
 struct sockaddr_in6 servaddrToSend;
 
 
-int ackRoutine(pkt_t pkt_routine){
-    printf("hello\n");
-    uint8_t one = 1;
-    printf("receive ack : %u\n", pkt_get_ack(&pkt_routine));
-    if(pkt_get_ack(&pkt_routine)==one){
-        printf("je  suis rentreeeee \n");
-        uint8_t id = pkt_get_msgid(&pkt_routine);
-        printf("j'ai planté ici les mouks \n");
-        uint8_t token = pkt_get_token(&pkt_routine);
-        printf("j'ai planté ici les mouks2 \n");
-        printf("received id : %u\n",id);
-        printf("receive token : %u\n", token);
+// int ackRoutine(pkt_t pkt_routine){
+//     printf("hello\n");
+//     uint8_t one = 1;
+//     printf("receive ack : %u\n", pkt_get_ack(&pkt_routine));
+//     if(pkt_get_ack(&pkt_routine)==one){
+//         printf("je  suis rentreeeee \n");
+//         uint8_t id = pkt_get_msgid(&pkt_routine);
+//         printf("j'ai planté ici les mouks \n");
+//         uint8_t token = pkt_get_token(&pkt_routine);
+//         printf("j'ai planté ici les mouks2 \n");
+//         printf("received id : %u\n",id);
+//         printf("receive token : %u\n", token);
     
-        delete (id, token, list);
+//         delete (id, token, list);
+//     }
+// }
+
+int sendHello(pkt_t pktHello){
+    uint8_t code = pkt_get_code(&pktHello);
+    if(code = PCODE_HELLO ){
+        printf("hello packet receive bande de mouk \n");
     }
+
 }
 
 
 int handlePacket(char* b){
 
     pkt_t pktHandle ;
-    if(PKT_OK != pkt_decode(b,5,&pktHandle)){
+    if(PKT_OK != pkt_decode(b,&pktHandle)){
         return -1;
     }
-    ackRoutine(pktHandle);
+    sendHello(pktHandle);
 
 }
 void *inputThread(void *empty)
@@ -84,8 +93,8 @@ void *inputThread(void *empty)
         printf("action : %s\n", action);
         if (strcmp(device, "lamp") == 0)
         {
-            post_types_t post_type = PTYPE_LIGHT_ON;
-            ptypes_t type = PTYPE_POST;
+            lamp_types_t post_type = PTYPE_LIGHT_ON;
+            pcode_t type = PCODE_POST;
 
             if (strcmp(action, "turnon") == 0)
             {
@@ -143,7 +152,7 @@ void *inputThread(void *empty)
 
 int main()
 {
-    list = init_list();
+    list = init_list(sockfd,10);
     if(list == NULL){
         printf("malloc failed");
     }

@@ -10,15 +10,14 @@ pkt_t *pkt_new() {
   pkt_t *pkt = malloc(sizeof(pkt_t));
   return pkt;
 }
-
 void pkt_del(pkt_t *pkt) { free(pkt); }
 
-pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
+pkt_status_code pkt_decode(const char *data, pkt_t *pkt) {
 
   uint8_t header = *data;
   int index = 0;
 
-  pkt_set_code(pkt, (ptypes_t)header >> 2);
+  pkt_set_code(pkt, (pcode_t)header >> 2);
 
   uint8_t ack = header;
   uint8_t qr = header;
@@ -32,6 +31,8 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
   qr = qr >> 7;
   
   pkt_set_query(pkt,qr);
+  index++;
+  pkt_set_device(pkt, *(data+index));
   index++;
   pkt_set_msgid(pkt, *(data+index));
   index++;
@@ -48,6 +49,8 @@ pkt_status_code pkt_encode(const pkt_t *pkt, char *buf) {
   *buf  = pkt_get_code(pkt) << 2;
   *buf |= pkt_get_ack(pkt)<<1;
   *buf |= pkt_get_query(pkt);
+  index++;
+  *(buf+index) = pkt_get_device(pkt);
   index++;
   *(buf+index) = pkt_get_msgid(pkt);
   index++;
@@ -72,7 +75,12 @@ pkt_status_code pkt_set_query(pkt_t *pkt,uint8_t qr){
   return PKT_OK;
 }
 
-ptypes_t pkt_get_code(const pkt_t *pkt) { return (pkt->code); }
+pkt_status_code pkt_set_device(pkt_t *pkt,device_t device){
+  pkt->device = device;
+  return PKT_OK;
+}
+
+pcode_t pkt_get_code(const pkt_t *pkt) { return (pkt->code); }
 
 uint8_t pkt_get_ack(const pkt_t *pkt) {return (pkt->ack); }
 
@@ -82,11 +90,13 @@ uint8_t pkt_get_msgid(const pkt_t *pkt) { return pkt->msgid; }
 
 uint8_t pkt_get_token(const pkt_t *pkt) {return (pkt->token); }
 
+device_t pkt_get_device(const pkt_t *pkt) {return (pkt->device); }
+
 const char *pkt_get_payload(const pkt_t *pkt) { return pkt->payload; }
 
-pkt_status_code pkt_set_code(pkt_t *pkt, const ptypes_t type) {
+pkt_status_code pkt_set_code(pkt_t *pkt, const pcode_t type) {
   // veryfing that type argument is valid
-  if (type != PTYPE_GET && type != PTYPE_ACK && type != PTYPE_POST) {
+  if (type != PCODE_GET && type != PCODE_ACK && type != PCODE_POST) {
     return E_TYPE;
   }
   pkt->code = type;

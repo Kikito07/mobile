@@ -15,7 +15,7 @@ pkt_t *pkt_new() {
 
 void pkt_del(pkt_t *pkt) { free(pkt); }
 
-pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt) {
+pkt_status_code pkt_decode(const char *data, pkt_t *pkt) {
 
   uint8_t header = *data;
 

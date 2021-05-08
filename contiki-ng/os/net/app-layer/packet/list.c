@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "packet.h"
 
-list_t *init_list()
+list_t *init_list(int sockfd,int r_timer)
 {
     list_t *list = malloc(sizeof(list_t));
     if (list == NULL)
@@ -14,6 +14,8 @@ list_t *init_list()
     }
     list->head = NULL;
     list->last = NULL;
+    list->sockfd = sockfd;
+    list->r_timer;
     return list;
 }
 
@@ -21,14 +23,12 @@ void printList(list_t *list)
 {
     node_t *ptr = list->head;
     printf("\n[ ");
-
     //start from the beginning
     while (ptr != NULL)
     {
         printf("%u\n", (ptr->pkt.msgid));
         ptr = ptr->next;
     }
-
     printf(" ]");
 }
 
@@ -103,6 +103,35 @@ node_t *find(uint8_t msgid, list_t *list)
     return current;
 }
 
+int reTransmit(list_t *list,int timer)
+{
+    node_t *current = list->head;
+    //if list is empty
+    if (current == NULL)
+    {
+        return -1;
+    }
+    //navigate through list
+    while (current != NULL)
+    {
+        if((timer-(current -> timer)) > list->r_timer){
+
+            char buf[10];
+            pkt_t pkt = current->pkt;
+            pkt_encode(&pkt, buf);
+            int err = sendto(list->sockfd, buf, sizeof(int),
+                         MSG_CONFIRM, (const struct sockaddr *)&current->addr,
+                         sizeof(current->addr));
+            if(err < 0){  
+                return -1;
+            }
+            current->timer = timer;   
+        }
+        current = current->next;
+    }
+return 1;
+}
+
 //delete a link with given key
 node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
 {
@@ -110,6 +139,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
     node_t *head = list->head;
     node_t *current = head;
     node_t *previous = NULL;
+    
 
     //if list is empty
     if (head == NULL)
@@ -120,7 +150,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
     //navigate through list
     while ((current->pkt.msgid != msgid) && (current->pkt.token != token))
     {
-
+        
         //if it is last node
         if (current->next == NULL)
         {
@@ -136,6 +166,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
     }
 
     //found a match, update the link
+    node_t *tmp = current;
     if (current == head)
     {
         //change first to point to next link
@@ -146,8 +177,8 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
         //bypass the current link
         previous->next = current->next;
     }
-
-    return current;
+    free(tmp);
+    return NULL;
 }
 
 // void main()

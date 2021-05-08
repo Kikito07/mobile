@@ -30,13 +30,14 @@ static uint16_t len;
 /* Should we act as RPL root? */
 #define SERVER_RPL_ROOT 0
 
-#if SERVER_RPL_ROOT
-static uip_ipaddr_t ipaddr;
-#endif
+// static uip_ipaddr_t ipServAddr;
+
 
 /*---------------------------------------------------------------------------*/
 
 PROCESS(udp_server_process, "UDP server process");
+PROCESS(boot_process, "boot process");
+
 AUTOSTART_PROCESSES(&udp_server_process);
 
 /*---------------------------------------------------------------------------*/
@@ -44,22 +45,26 @@ AUTOSTART_PROCESSES(&udp_server_process);
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
 static uint16_t len;
+static struct etimer timer;
+static int helloDeviceDone = 0;
+static uip_ipaddr_t ipaddr;
+static size_t pkt_size = 5;
 
 /*---------------------------------------------------------------------------*/
 
-static void
+static void 
 handle_packet()
 {
     pkt_t pkt;
-    size_t size = 3;
-    if (PKT_OK != pkt_decode(buf, size, &pkt))
+    
+    if (PKT_OK != pkt_decode(buf, &pkt))
     {
         printf("packet received but encode fail");
     }
-    if (pkt_get_code(&pkt) == PTYPE_POST)
+    if (pkt_get_code(&pkt) == PCODE_POST)
     {
         const char *payload = pkt_get_payload(&pkt);
-        post_types_t post_type = payload[0];
+        lamp_types_t post_type = payload[0];
         if (post_type == PTYPE_LIGHT_ON)
         {
             leds_on(LEDS_RED);
@@ -72,7 +77,7 @@ handle_packet()
             leds_off(LEDS_RED);
         }
     }
-    pkt_set_code(&pkt, PTYPE_ACK);
+    pkt_set_code(&pkt, PCODE_ACK);
     pkt_encode(&pkt, buf);
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
     server_conn->rport = UIP_UDP_BUF->srcport;
@@ -105,74 +110,43 @@ tcpip_handler(void)
     return;
 }
 
-/*------------------------------------------------------------------------------------------------------ */
 
 /*---------------------------------------------------------------------------*/
 
-#if SERVER_RPL_ROOT
-static void
-print_local_addresses(void)
-{
-    int i;
-    uint8_t state;
+PROCESS_THREAD(boot_process, ev, data){
 
-    PRINTF("Server IPv6 addresses:\n");
-    for (i = 0; i < UIP_DS6_ADDR_NB; i++)
-    {
-        state = uip_ds6_if.addr_list[i].state;
-        if (uip_ds6_if.addr_list[i].isused && (state == ADDR_TENTATIVE || state == ADDR_PREFERRED))
+    PROCESS_BEGIN();
+    etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
+    while (1)
+    {   PRINTF("hello boy\n");
+        PROCESS_YIELD();
+        if (ev == PROCESS_EVENT_TIMER)
         {
-            PRINTF("  ");
-            PRINT6ADDR(&uip_ds6_if.addr_list[i].ipaddr);
-            PRINTF("\n");
-            if (state == ADDR_TENTATIVE)
-            {
-                uip_ds6_if.addr_list[i].state = ADDR_PREFERRED;
-            }
+            PRINTF("HELLO\n");
+            etimer_reset(&timer);
+            
         }
     }
+
+    // PRINTF("hello\n");
+    // char msg[] = "hello guys\n";
+    // uint16_t msglen = sizeof(msg);
+    // uip_ipaddr_t ipaddr;
+    // uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
+    // PRINT6ADDR(&ipaddr);
+    // PRINTF("\n");
+    // server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
+    // uip_udp_packet_send(server_conn, msg, msglen);
+    // uip_create_unspecified(&server_conn->ripaddr);
+    // server_conn->rport = 0;
+    
+    PROCESS_END();
+
+
 }
 
-/*---------------------------------------------------------------------------*/
 
-void create_dag()
-{
 
-    uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);
-    uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
-    uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
-
-    print_local_addresses();
-
-    rpl_dag_root_set_prefix(NULL, NULL);
-    int tmp = rpl_dag_root_start();
-
-#if !USE_RPL_CLASSIC
-    if (tmp == 0)
-    {
-        PRINTF("Server set as ROOT in the DAG\n");
-    }
-    else
-    {
-        PRINTF("RIP\n");
-    }
-#else
-    rpl_dag_t *dag;
-    dag = rpl_set_root(RPL_DEFAULT_INSTANCE,
-                       &uip_ds6_get_global(ADDR_PREFERRED)->ipaddr);
-    if (dag != NULL)
-    {
-        uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);
-        rpl_set_prefix(dag, &ipaddr, 64);
-        PRINTF("Created a new RPL dag with ID: ");
-        PRINT6ADDR(&dag->dag_id);
-        PRINTF("\n");
-    }
-#endif
-}
-#endif /* SERVER_RPL_ROOT */
-
-/*---------------------------------------------------------------------------*/
 
 PROCESS_THREAD(udp_server_process, ev, data)
 {
@@ -185,43 +159,45 @@ PROCESS_THREAD(udp_server_process, ev, data)
     create_dag();
 #endif
 
-
-
-    
-    
-    
-    // PROCESS_BEGIN();
-    // while(1){
-    //     
-    // }
-    // PROCESS_END();
-
-    server_conn = udp_new(NULL, UIP_HTONS(0), NULL);
+    uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
+    server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
     udp_bind(server_conn, UIP_HTONS(3000));
-    
-    
-    PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
-    PRINTF("hello\n");
+    pkt_t hello_pkt;
+    uint8_t msgid = 5;
+    uint8_t token = 3;
+    pkt_set_msgid(&hello_pkt,msgid);
+    pkt_set_token(&hello_pkt,token);
+    pkt_set_code(&hello_pkt, PCODE_HELLO);
+    pkt_encode(&hello_pkt, buf);
 
+    PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
+
+    etimer_set(&timer, 1 * CLOCK_CONF_SECOND);
     while (1)
-    {
+    { 
         PROCESS_YIELD();
-        if (ev == tcpip_event)
+        if (ev == PROCESS_EVENT_TIMER)
         {
-            // PRINTF("hello\n");
-            // char msg[] = "hello guys\n";
-            // uint16_t msglen = sizeof(msg);
-            // uip_ipaddr_t ipaddr;
-            // uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
-            // PRINT6ADDR(&ipaddr);
-            // PRINTF("\n");
-            // server_conn = udp_new(&ipaddr, UIP_HTONS(37600), NULL);
-            // uip_udp_packet_send(server_conn, msg, msglen);
-            // uip_create_unspecified(&server_conn->ripaddr);
-            // server_conn->rport = 0;
+            PRINTF("normal pritn\n");
+            
+            if(helloDeviceDone == 0){
+                uip_udp_packet_send(server_conn, buf, pkt_size);
+                PRINTF("HELLO\n");
+
+            }
+            else{
+                PRINTF("SENDHELLO\n");
+            }
+            etimer_reset(&timer);
+            
+        }
+        else if(ev == tcpip_event){
+            PRINTF("hello tcp\n");
             tcpip_handler();
+            helloDeviceDone = 1;
+            etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
+
         }
     }
-
     PROCESS_END();
 }

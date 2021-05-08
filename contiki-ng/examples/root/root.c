@@ -152,7 +152,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     while(1) {
         PROCESS_YIELD();
         if(ev == tcpip_event) {
-            PRINTF("WOW");
+            
             tcpip_handler();
         }
     }
