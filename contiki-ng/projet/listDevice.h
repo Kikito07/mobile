@@ -5,7 +5,7 @@
 
 typedef struct nodeDevice {
   struct nodeDevice *next;
-  struct sockaddr * addr;
+  struct sockaddr_in6 * addr;
   uint8_t token;
   device_t device;
   unsigned long timer;
@@ -15,15 +15,16 @@ typedef struct listDevice // list structure
 {
   node_device_t *head; // head of list
   node_device_t *last;  // tail of list
-  int size;      // number of element in list
-  int window;    // window of the reseau
-  bool marker;
+  int sockfd;
   int r_timer;
+  size_t enc_pkt_size;
+
 } list_device_t;
 
 
 void printListDevice(list_device_t *list);
-void insertLastDevice(list_device_t *list,struct sockaddr * addr,uint8_t token, device_t device, unsigned long timer);
-list_device_t *init_listDevice(unsigned long r_timer);
+void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer);
+list_device_t *init_listDevice(int sockfd,unsigned long r_timer);
 int deleteTOutDevice (list_device_t *list,unsigned long timer);
 node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list);
+void sendToDevice(list_device_t *list, device_t device, int index, char * buf);

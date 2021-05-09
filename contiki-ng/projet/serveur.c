@@ -38,6 +38,8 @@ list_device_t *list_device;
 struct sockaddr_in6 servaddrToSend;
 unsigned long start;
 bool usedToken[128];
+size_t enc_pkt_size = 6;
+lamp_types_t post_type;
 
 
 // int ackRoutine(pkt_t pkt_routine){
@@ -60,7 +62,29 @@ unsigned long timer(){
     return clock()*1000 /CLOCKS_PER_SEC;
 }
 
-int receivHello(pkt_t pktHello,struct sockaddr* nAddr){
+pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t msgid, uint8_t token, char * payload){
+    pkt_t *new_pkt = pkt_new();
+    if(new_pkt == NULL){
+        printf("PKT is NULL pointer\n");
+    }
+
+
+    pkt_set_code(new_pkt, code);
+    pkt_set_ack(new_pkt, ack);
+    pkt_set_query(new_pkt, qr);
+    
+    pkt_set_msgid(new_pkt, msgid);
+    pkt_set_token(new_pkt,token);
+    
+    size_t size = 1;
+    pkt_set_payload(new_pkt, (const char *)payload,2);
+
+
+    return new_pkt;
+
+}
+
+int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
     uint8_t code = pkt_get_code(&pktHello);
     uint8_t token = pkt_get_token(&pktHello);
     if(code = PCODE_HELLO ){
@@ -78,7 +102,7 @@ int receivHello(pkt_t pktHello,struct sockaddr* nAddr){
 }
 
 
-int handlePacket(char* b,struct sockaddr* nAddr){
+int handlePacket(char* b,struct sockaddr_in6* nAddr){
 
     pkt_t pktHandle ;
     if(PKT_OK != pkt_decode(b,&pktHandle)){
@@ -104,22 +128,24 @@ void *inputThread(void *empty)
         int init_size = strlen(string);
         char delim[] = " ";
         char *device = strtok(string, delim);
+        int index = atoi(strtok(NULL, delim));
         char *action = strtok(NULL, delim);
         printf("device : %s\n", device);
+        printf("index : %d \n", index);
         printf("action : %s\n", action);
         if (strcmp(device, "lamp") == 0)
         {
-            lamp_types_t post_type = PTYPE_LIGHT_ON;
             pcode_t type = PCODE_POST;
 
             if (strcmp(action, "turnon") == 0)
-            {
+            {   
                 post_type = PTYPE_LIGHT_ON;
-                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
-                if (err <= 0){
-                    printf("error");
-                }
+                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
+                pkt_encode(pkt, buf);
+                sendToDevice(list_device, LAMP, index,buf);
+
             }
+            
             else if (strcmp(action, "turnoff") == 0)
             {
 
@@ -133,24 +159,9 @@ void *inputThread(void *empty)
             
 
 
-            pkt = pkt_new();
-
-            uint8_t tok = 2;
-            pkt_set_token(pkt,tok);
-
-            pkt_set_code(pkt, type);
-
-            pkt_set_payload(pkt, (const char *)&post_type, 2);
-
-            pkt_set_msgid(pkt, msgid);
-            msgid++;
-
-            pkt_encode(pkt, buf);
-            int n, len, err;
-            insertFirst(*pkt,list,servaddrToSend);
 
             
-            err = sendto(sockfd, buf, sizeof(int),
+            err = sendto(sockfd, buf, enc_pkt_size,
                          MSG_CONFIRM, (const struct sockaddr *)&servaddrToSend,
                          sizeof(nodeAddr));
             if (err < 0)
@@ -174,21 +185,23 @@ int main()
         usedToken[i] = false;
     }
 
-    list = init_list(sockfd,1*1000);
-    if(list == NULL){
-        printf("malloc failed");
-    }
-    list_device = init_listDevice(10*1000);
-    if(list == NULL){
-        printf("malloc failed");
-    }
+    
 
     if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
     {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
-    
+
+    list = init_list(sockfd,1*1000);
+    if(list == NULL){
+        printf("malloc failed");
+    }
+    list_device = init_listDevice(sockfd,10*1000);
+    if(list == NULL){
+        printf("malloc failed");
+    }
+    memset(&myaddress, 0, sizeof(myaddress));
     myaddress.sin6_family = AF_INET6;
     myaddress.sin6_addr = in6addr_any;
     myaddress.sin6_port = htons( PORT );
@@ -197,14 +210,11 @@ int main()
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-
-    
     memset(&nodeAddr, 0, sizeof(nodeAddr));
     nodeAddr.sin6_family = AF_INET6;
     nodeAddr.sin6_port = htons(PORT);
     int err;
     err = inet_pton(AF_INET6, NODE1ADDR, &nodeAddr.sin6_addr);
-
     if (err <= 0)
     {
         printf("error");
@@ -229,8 +239,10 @@ int main()
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
                          MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
-            // printf("ret %s\n",bufMain);
-            handlePacket(bufMain,(struct sockaddr *)&nodeAddr);
+            //this is sketchy
+            struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
+            memcpy(mallocedNodeAddr,&nodeAddr,sizeof(nodeAddr));
+            handlePacket(bufMain,mallocedNodeAddr);
 
         }
     }

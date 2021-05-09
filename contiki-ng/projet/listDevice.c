@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "../os/net/app-layer/packet/packet.h"
 
-list_device_t *init_listDevice(unsigned long r_timer)
+list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 {
     list_device_t *list = malloc(sizeof(list_device_t));
     if (list == NULL)
@@ -15,6 +15,8 @@ list_device_t *init_listDevice(unsigned long r_timer)
     list->head = NULL;
     list->last = NULL;
     list->r_timer = r_timer;
+    list->sockfd = sockfd;
+    list->enc_pkt_size = 6;
     return list;
 }
 
@@ -33,34 +35,100 @@ void printListDevice(list_device_t *list)
     printf(" ]");
 }
 
-//insert link at the first location
-void insertLastDevice(list_device_t *list,struct sockaddr * addr,uint8_t token, device_t device, unsigned long timer)
+int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
 {
-    node_device_t *head = list->head;
-    //create a link
-    node_device_t *link = (node_device_t *)malloc(sizeof(node_device_t));
-   
-    link->addr = addr;
-
-    link-> token = token; 
-
-    //point it to old first node
-    link->device = device;
-
-    //point first to new first node
-    link->timer = timer;
-
-    link->next = NULL;
-
-    if(head == NULL){
-        list->head = link;
-        return;
+    int i = 0;
+    for(i = 0; i < 16; ++i) // Don't use magic number, here just for example
+    {
+        if (ipA->s6_addr[i] < ipB->s6_addr[i])
+            return -1;
+        else if (ipA->s6_addr[i] > ipB->s6_addr[i])
+            return 1;
     }
-    node_device_t *current = head;
-    while(current->next != NULL){
-        current = current->next;
+    return 0;
+}
+
+int isNotInList(list_device_t *list,struct sockaddr_in6 *addr){
+    node_device_t *ptr = list->head;
+
+    //start from the beginning
+    while (ptr != NULL)
+    {        
+        struct sockaddr_in6 *listAddr = ptr->addr;
+
+        if(compare_ipv6(&listAddr->sin6_addr,&addr->sin6_addr) == 0){
+            return 0;
+        }
+        ptr = ptr->next;
+
     }
-    current->next = link;
+    return 1;
+
+}
+
+
+//insert link at the first location
+
+void sendToDevice(list_device_t *list, device_t device, int index, char * buf){
+    
+    size_t enc_pkt_size = 6;
+    node_device_t *ptr = list->head;
+    int i = 0;
+
+    //start from the beginning
+    while (ptr != NULL)
+    {        
+        device_t dev = ptr->device;
+
+        if(dev == device){
+            i++;
+            if(i == index){
+                
+                int err = sendto(list->sockfd, buf, list->enc_pkt_size,
+                            MSG_CONFIRM, (const struct sockaddr *)ptr->addr,
+                            sizeof(*(ptr->addr)));
+                if(err < 0){
+                    perror("failed to send : ");
+                }
+                
+            }
+        }
+        ptr = ptr->next;
+
+    }
+    
+}
+void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer)
+{
+
+    if(1 == isNotInList(list,addr)){
+        printf("hello insert\n");
+        node_device_t *head = list->head;
+        //create a link
+        node_device_t *link = (node_device_t *)malloc(sizeof(node_device_t));
+    
+        link->addr = addr;
+
+        link-> token = token; 
+
+        //point it to old first node
+        link->device = device;
+
+        //point first to new first node
+        link->timer = timer;
+
+        link->next = NULL;
+
+        if(head == NULL){
+            list->head = link;
+            return;
+        }
+        node_device_t *current = head;
+        while(current->next != NULL){
+            current = current->next;
+        }
+        current->next = link;
+    }
 
 }
 //is list empty
@@ -147,7 +215,7 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
                 previous->next = current->next;
                 current = current->next;
             }
-            
+            free(tmp->addr);
             free(tmp);
 
         }
@@ -166,7 +234,7 @@ return 1;
 //     device_t device2 = TEMP;
 //     device_t device3 = SERV;
 //     uint8_t token = 1;
-//     struct sockaddr addr;
+//     struct sockaddr_in6 addr;
 //     insertLastDevice(list,&addr,token, device1, 10);
 //     insertLastDevice(list,&addr,token, device2, 0);
 //     insertLastDevice(list,&addr,token, device3, 10);
