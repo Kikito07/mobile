@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "packet.h"
 
-list_t *init_list(int sockfd,int r_timer)
+list_t *init_list(int sockfd,unsigned long r_timer)
 {
     list_t *list = malloc(sizeof(list_t));
     if (list == NULL)
@@ -103,7 +103,7 @@ node_t *find(uint8_t msgid, list_t *list)
     return current;
 }
 
-int reTransmit(list_t *list,int timer)
+int reTransmit(list_t *list,unsigned long timer)
 {
     node_t *current = list->head;
     //if list is empty

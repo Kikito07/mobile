@@ -49,6 +49,7 @@ static struct etimer timer;
 static int helloDeviceDone = 0;
 static uip_ipaddr_t ipaddr;
 static size_t pkt_size = 5;
+static uint8_t token = 0;
 
 /*---------------------------------------------------------------------------*/
 
@@ -164,7 +165,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     udp_bind(server_conn, UIP_HTONS(3000));
     pkt_t hello_pkt;
     uint8_t msgid = 5;
-    uint8_t token = 3;
+    uint8_t token = 0;
     pkt_set_msgid(&hello_pkt,msgid);
     pkt_set_token(&hello_pkt,token);
     pkt_set_code(&hello_pkt, PCODE_HELLO);

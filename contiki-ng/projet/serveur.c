@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include "../os/net/app-layer/packet/packet.h"
 #include "../os/net/app-layer/packet/list.h"
+#include "listDevice.h"
 #include <poll.h>
 #include <pthread.h>
 #include <time.h>
@@ -33,7 +34,10 @@ uint8_t msgid = 1;
 pkt_t *pkt;
 struct pollfd fds[1];
 list_t *list;
+list_device_t *list_device;
 struct sockaddr_in6 servaddrToSend;
+unsigned long start;
+bool usedToken[128];
 
 
 // int ackRoutine(pkt_t pkt_routine){
@@ -52,23 +56,35 @@ struct sockaddr_in6 servaddrToSend;
 //         delete (id, token, list);
 //     }
 // }
+unsigned long timer(){
+    return clock()*1000 /CLOCKS_PER_SEC;
+}
 
-int sendHello(pkt_t pktHello){
+int receivHello(pkt_t pktHello,struct sockaddr* nAddr){
     uint8_t code = pkt_get_code(&pktHello);
+    uint8_t token = pkt_get_token(&pktHello);
     if(code = PCODE_HELLO ){
-        printf("hello packet receive bande de mouk \n");
+        if(token == 0){
+            //adding to the list of device
+            device_t device = pkt_get_device(&pktHello);
+            insertLastDevice(list_device,nAddr,token, device,timer());
+
+        }
+    }
+    else{
+        
     }
 
 }
 
 
-int handlePacket(char* b){
+int handlePacket(char* b,struct sockaddr* nAddr){
 
     pkt_t pktHandle ;
     if(PKT_OK != pkt_decode(b,&pktHandle)){
         return -1;
     }
-    sendHello(pktHandle);
+    receivHello(pktHandle, nAddr);
 
 }
 void *inputThread(void *empty)
@@ -144,15 +160,25 @@ void *inputThread(void *empty)
 
         }
         else if((strcmp(device, "list") == 0)){
-            printList(list);
+            printListDevice(list_device);
             printf("\n");
         }
     }
 }
 
+
+
 int main()
 {
-    list = init_list(sockfd,10);
+    for(int i = 0;i<128;i++){
+        usedToken[i] = false;
+    }
+
+    list = init_list(sockfd,1*1000);
+    if(list == NULL){
+        printf("malloc failed");
+    }
+    list_device = init_listDevice(10*1000);
     if(list == NULL){
         printf("malloc failed");
     }
@@ -172,7 +198,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-
+    
     memset(&nodeAddr, 0, sizeof(nodeAddr));
     nodeAddr.sin6_family = AF_INET6;
     nodeAddr.sin6_port = htons(PORT);
@@ -204,7 +230,7 @@ int main()
                          MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
             // printf("ret %s\n",bufMain);
-            handlePacket(bufMain);
+            handlePacket(bufMain,(struct sockaddr *)&nodeAddr);
 
         }
     }

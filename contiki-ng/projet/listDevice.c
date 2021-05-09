@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "../os/net/app-layer/packet/packet.h"
 
-list_device_t *init_listDevice(int r_timer)
+list_device_t *init_listDevice(unsigned long r_timer)
 {
     list_device_t *list = malloc(sizeof(list_device_t));
     if (list == NULL)
@@ -34,12 +34,12 @@ void printListDevice(list_device_t *list)
 }
 
 //insert link at the first location
-void insertFirstDevice(list_device_t *list,struct sockaddr_in6 addr,uint8_t token, device_t device, int timer)
+void insertLastDevice(list_device_t *list,struct sockaddr * addr,uint8_t token, device_t device, unsigned long timer)
 {
     node_device_t *head = list->head;
     //create a link
     node_device_t *link = (node_device_t *)malloc(sizeof(node_device_t));
-
+   
     link->addr = addr;
 
     link-> token = token; 
@@ -50,9 +50,18 @@ void insertFirstDevice(list_device_t *list,struct sockaddr_in6 addr,uint8_t toke
     //point first to new first node
     link->timer = timer;
 
-    link->next = head;
+    link->next = NULL;
 
-    list->head = link;
+    if(head == NULL){
+        list->head = link;
+        return;
+    }
+    node_device_t *current = head;
+    while(current->next != NULL){
+        current = current->next;
+    }
+    current->next = link;
+
 }
 //is list empty
 bool isEmptyListDevice(list_device_t *list)
@@ -108,7 +117,7 @@ node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list)
 }
 
 //delete a link with given key
-int deleteTOutDevice (list_device_t *list,int timer)
+int deleteTOutDevice (list_device_t *list,unsigned long timer)
 {
     node_device_t *current = list->head;
     node_device_t *previous = NULL;
@@ -150,17 +159,17 @@ int deleteTOutDevice (list_device_t *list,int timer)
 return 1;
 }
 
-void main()
-{
-    list_device_t *list = init_listDevice(20);
-    device_t device1 = LAMP;
-    device_t device2 = TEMP;
-    device_t device3 = SERV;
-    uint8_t token = 1;
-    struct sockaddr_in6 addr;
-    insertFirstDevice(list,addr,token, device1, 10);
-    insertFirstDevice(list,addr,token, device2, 0);
-    insertFirstDevice(list,addr,token, device3, 10);
-    deleteTOutDevice(list, 25);
-    printListDevice(list);
-}
+// void main()
+// {
+//     list_device_t *list = init_listDevice(20);
+//     device_t device1 = LAMP;
+//     device_t device2 = TEMP;
+//     device_t device3 = SERV;
+//     uint8_t token = 1;
+//     struct sockaddr addr;
+//     insertLastDevice(list,&addr,token, device1, 10);
+//     insertLastDevice(list,&addr,token, device2, 0);
+//     insertLastDevice(list,&addr,token, device3, 10);
+//     // deleteTOutDevice(list, 25);
+//     printListDevice(list);
+// }
