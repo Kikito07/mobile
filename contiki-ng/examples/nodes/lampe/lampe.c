@@ -56,17 +56,29 @@ static uint8_t token = 0;
 
 static void 
 handle_packet()
-{
+{   
+    if(helloDeviceDone == 0){
+        token 
+    }
     pkt_t pkt;
     
     if (PKT_OK != pkt_decode(buf, &pkt))
     {
         printf("packet received but encode fail");
     }
+    if(pkt_get_code(&pkt) == PCODE_HELLO){
+        if(helloDeviceDone == 0){
+            token = (uint8_t *)pkt_get_payload(&pkt);
+        }
+    }
+
     if (pkt_get_code(&pkt) == PCODE_POST)
     {
         const char *payload = pkt_get_payload(&pkt);
+        PRINTF("token : %u\n",pkt_get_token(&pkt));
+        PRINTF("msgid : %u\n",pkt_get_msgid(&pkt));
         lamp_types_t post_type = payload[0];
+        printf("post_type : %u\n",post_type);
         if (post_type == PTYPE_LIGHT_ON)
         {
             leds_on(LEDS_RED);
@@ -74,15 +86,20 @@ handle_packet()
             pkt_set_ack(&pkt,one);
             PRINTF("ddddddddddddd");
             PRINTF("ack : %u\n",pkt_get_ack(&pkt));
+            PRINTF("mais putain j'envois le ack mes couilles\n");
         }
         if (post_type == PTYPE_LIGHT_OFF)
         {
+            PRINTF("hello off\n");
             leds_off(LEDS_RED);
         }
     }
     pkt_set_ack(&pkt, 1);
     pkt_encode(&pkt, buf);
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+    PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
+    PRINTF(":%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
+
     server_conn->rport = UIP_UDP_BUF->srcport;
     uip_udp_packet_send(server_conn, buf, len);
     uip_create_unspecified(&server_conn->ripaddr);
@@ -188,6 +205,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
             }
             else{
+                uip_udp_packet_send(server_conn, buf_hello, pkt_size);
             }
             etimer_reset(&timer);
             

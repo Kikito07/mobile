@@ -21,7 +21,7 @@ typedef struct List // list structure
 
 
 void printList(list_t *list);
-void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr);
+void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr,unsigned long timer);
 list_t *init_list(int sockfd,unsigned long r_timer);
 node_t *delete (uint8_t msgid, uint8_t token, list_t *list);
 int reTransmit(list_t *list,unsigned long timer);

@@ -40,21 +40,19 @@ lamp_types_t post_type;
 
 
 
-void printBits(size_t const size, void const * const ptr)
-{
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
-    
-    for (i = 0; i < size; i++) {
-        for (j = 7; j >= 0; j--) {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-        printf("\n");
-    }
-    puts("");
-}
+// void printBits(size_t const size, void const * const ptr)
+// {
+//     unsigned char *b = (unsigned char*) ptr;
+//     unsigned char byte;
+//             //adding to the  >= 0; j--) {
+//             byte = (b[i] >> j) & 1;
+//             printf("%u", byte);
+//         }
+//         printf("\n");
+//     }
+//     puts("");
+// }
+
 
 uint8_t giveToken(){
     int i;
@@ -67,14 +65,15 @@ uint8_t giveToken(){
 }
 
 unsigned long timer(){
-    return clock()*1000 /CLOCKS_PER_SEC;
+    return clock();
 }
 int ackRoutine(pkt_t pkt_routine){
     
-    uint8_t one = 1;
-
-    if(pkt_get_ack(&pkt_routine)==one){
-        
+    printf("acktype : %u\n",pkt_get_ack(&pkt_routine));
+    if(pkt_get_ack(&pkt_routine)==1){
+        printf("token : %u\n",pkt_get_token(&pkt_routine));
+        printf("msgid : %u\n",pkt_get_msgid(&pkt_routine));
+        printf("ack received\n");
         uint8_t id = pkt_get_msgid(&pkt_routine);
         uint8_t token = pkt_get_token(&pkt_routine);
         delete(id, token, list);
@@ -82,7 +81,7 @@ int ackRoutine(pkt_t pkt_routine){
 }
 
 
-pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t msgid, uint8_t token, char * payload){
+pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t token, char * payload){
     pkt_t *new_pkt = pkt_new();
     if(new_pkt == NULL){
         printf("PKT is NULL pointer\n");
@@ -98,20 +97,26 @@ pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t msgid, uint8
     
     size_t size = 1;
     pkt_set_payload(new_pkt, (const char *)payload,2);
-
-
+    
+    printf("msg : %u\n",msgid);
+    msgid++;
     return new_pkt;
 
 }
+
+int 
 
 int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
     uint8_t code = pkt_get_code(&pktHello);
     uint8_t token = pkt_get_token(&pktHello);
     if(code = PCODE_HELLO ){
+        device_t device = pkt_get_device(&pktHello);
         if(token == 0){
             //adding to the list of device
-            device_t device = pkt_get_device(&pktHello);
             insertLastDevice(list_device,nAddr,token, device,timer());
+        }
+        else{
+            refreshDevice(list_device,token,timer());
         }
     }
     else{
@@ -137,6 +142,7 @@ void *inputThread(void *empty)
 
     while (true)
     {   
+        
         memset(&servaddrToSend, 0, sizeof(servaddrToSend));
         servaddrToSend.sin6_family = AF_INET6;
         servaddrToSend.sin6_port = htons(PORT);
@@ -160,29 +166,30 @@ void *inputThread(void *empty)
         {
             pcode_t type = PCODE_POST;
 
-            if (strcmp(action, "turnon") == 0)
+            if (strcmp(action, "on") == 0)
             {   
                 post_type = PTYPE_LIGHT_ON;
-                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
+                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, (char *)&post_type);
                 pkt_encode(pkt, buf);
-                printBits(5,buf);
+                // printBits(5,buf);
                 struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
                 if(d_addr != NULL){
-                    insertFirst(*pkt,list,*d_addr);
+                    insertFirst(*pkt,list,*d_addr,timer());
+                    
                 }
 
             }
             
-            else if (strcmp(action, "turnoff") == 0)
+            else if (strcmp(action, "off") == 0)
             {
 
                 post_type = PTYPE_LIGHT_OFF;
-                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
+                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, (char *)&post_type);
                 pkt_encode(pkt, buf);
-                printBits(5,buf);
+                // printBits(5,buf);
                 struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
                 if(d_addr != NULL){
-                    insertFirst(*pkt,list,*d_addr);
+                    insertFirst(*pkt,list,*d_addr,timer());
                 }
             }
             
@@ -229,7 +236,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    list = init_list(sockfd,1*1000);
+    list = init_list(sockfd,3*1000);
     if(list == NULL){
         printf("malloc failed");
     }
@@ -267,6 +274,7 @@ int main()
     int n, len, rc;
     while (true)
     {
+        // printf("timer : %lu\n",timer());
         
         rc = poll(fds, 1, 50);
         if (rc == -1)
@@ -287,8 +295,8 @@ int main()
             handlePacket(bufMain,mallocedNodeAddr);
             
         }
-        // reTransmit(list,timer());
-        // deleteTOutDevice (list_device,timer());
+        reTransmit(list,timer());
+        deleteTOutDevice(list_device,timer());
     }
     pthread_join(thread_id, NULL);
     printf("After Thread\n");

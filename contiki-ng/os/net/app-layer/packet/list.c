@@ -34,7 +34,7 @@ void printList(list_t *list)
 }
 
 //insert link at the first location
-void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr)
+void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr,unsigned long timer)
 {
     node_t *head = list->head;
     //create a link
@@ -46,6 +46,8 @@ void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr)
 
     //point it to old first node
     link->next = head;
+
+    link->timer = timer;
 
     //point first to new first node
     list->head = link;
@@ -116,16 +118,17 @@ int reTransmit(list_t *list,unsigned long timer)
     while (current != NULL)
     {
         // printf("r_timer : %lu\n",list->r_timer);
+
         // printf("diff : %lu\n",timer-(current -> timer));
 
         if((timer-(current -> timer)) > list->r_timer){
-
+            
             printf("in timer\n");
 
             char buf[10];
             pkt_t pkt = current->pkt;
             pkt_encode(&pkt, buf);
-            int err = sendto(list->sockfd, buf, sizeof(int),
+            int err = sendto(list->sockfd, buf, 6,
                          MSG_CONFIRM, (const struct sockaddr *)&current->addr,
                          sizeof(current->addr));
             if(err < 0){

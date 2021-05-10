@@ -98,6 +98,23 @@ struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int inde
     return NULL;
     
 }
+void refreshDevice(list_device_t *list,uint8_t token, unsigned long timer){
+    node_device_t *ptr = list->head;
+    int i = 0;
+    //start from the beginning
+    while (ptr != NULL)
+    {        
+        uint8_t tok = ptr->token;
+
+        if(token == tok){
+            ptr->timer = timer;
+        }
+        ptr = ptr->next;
+
+    }
+    return NULL;
+}
+
 void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer)
 {
 
