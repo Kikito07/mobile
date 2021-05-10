@@ -41,27 +41,32 @@ lamp_types_t post_type;
 
 
 
-// void printBits(size_t const size, void const * const ptr)
-// {
-//     unsigned char *b = (unsigned char*) ptr;
-//     unsigned char byte;
-//             //adding to the  >= 0; j--) {
-//             byte = (b[i] >> j) & 1;
-//             printf("%u", byte);
-//         }
-//         printf("\n");
-//     }
-//     puts("");
-// }
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = 0; i < size; i++) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+        printf("\n");
+    }
+    puts("");
+}
 
 
 uint8_t giveToken(){
     int i;
-    for(i = 0; i < 128;i++){
+    for(i = 1 ; i < 128;i++){
         if(usedToken[i]==false){
+            usedToken[i]= true;
             break;
         }
     }
+    printf("rturned token : %u\n",i);
     return i;
 }
 
@@ -113,8 +118,10 @@ int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
         device_t device = pkt_get_device(&pktHello);
         if(token == 0){
             printf("giving token\n");
+            printf("le token : %u", pkt_get_token(&pktHello));
             //adding to the list of device
             uint8_t newToken = giveToken();
+            printf("print tokitoken %u \n", newToken);
             pkt_set_payload(&pktHello,&newToken,1);
             pkt_encode(&pktHello, buf2);
             insertLastDevice(list_device,nAddr,token, device,timer());
@@ -303,6 +310,7 @@ int main()
             }
             struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
             memcpy(mallocedNodeAddr,&nodeAddr,sizeof(nodeAddr));
+            // printBits(6,bufMain);
             handlePacket(bufMain,mallocedNodeAddr);
             
         }

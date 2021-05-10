@@ -96,9 +96,6 @@ const char *pkt_get_payload(const pkt_t *pkt) { return pkt->payload; }
 
 pkt_status_code pkt_set_code(pkt_t *pkt, const pcode_t type) {
   // veryfing that type argument is valid
-  if (type != PCODE_GET && type != PCODE_ACK && type != PCODE_POST) {
-    return E_TYPE;
-  }
   pkt->code = type;
   return PKT_OK;
 }

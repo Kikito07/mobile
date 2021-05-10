@@ -51,6 +51,7 @@ static int helloDeviceDone = 0;
 static uip_ipaddr_t ipaddr;
 static size_t pkt_size = 5;
 static uint8_t token = 0;
+static pkt_t hello_pkt;
 
 /*---------------------------------------------------------------------------*/
 
@@ -61,17 +62,29 @@ handle_packet()
     
     if (PKT_OK != pkt_decode(buf, &pkt))
     {
-        printf("packet received but encode fail");
+        PRINTF("packet received but encode fail");
     }
+    PRINTF("code : %u\n",(uint8_t)pkt_get_code(&pkt));
+    PRINTF("hello msg : %u\n",PCODE_HELLO );
     if(pkt_get_code(&pkt) == PCODE_HELLO){
+        PRINTF("je suis rentre dans le premier if\n");
         if(helloDeviceDone == 0){
             PRINTF("inside token\n");
             token = *(pkt_get_payload(&pkt));
+            PRINTF("token lamp : %u\n",token);
+            pkt_set_token(&hello_pkt,token);
+            pkt_encode(&hello_pkt,buf_hello);
+            PRINTF("token apres encode : %u \n",pkt_get_token(&hello_pkt));
+
+            helloDeviceDone = 1;
+
+
         }
     }
 
     if (pkt_get_code(&pkt) == PCODE_POST)
     {
+
         const char *payload = pkt_get_payload(&pkt);
         PRINTF("token : %u\n",pkt_get_token(&pkt));
         PRINTF("msgid : %u\n",pkt_get_msgid(&pkt));
@@ -145,19 +158,6 @@ PROCESS_THREAD(boot_process, ev, data){
             
         }
     }
-
-    // PRINTF("hello\n");
-    // char msg[] = "hello guys\n";
-    // uint16_t msglen = sizeof(msg);
-    // uip_ipaddr_t ipaddr;
-    // uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
-    // PRINT6ADDR(&ipaddr);
-    // PRINTF("\n");
-    // server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
-    // uip_udp_packet_send(server_conn, msg, msglen);
-    // uip_create_unspecified(&server_conn->ripaddr);
-    // server_conn->rport = 0;
-    
     PROCESS_END();
 
 
@@ -180,11 +180,11 @@ PROCESS_THREAD(udp_server_process, ev, data)
     uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
     server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
     udp_bind(server_conn, UIP_HTONS(3000));
-    pkt_t hello_pkt;
     uint8_t msgid = 5;
+    pcode_t hell = PCODE_HELLO;
     pkt_set_msgid(&hello_pkt,msgid);
     pkt_set_token(&hello_pkt,token);
-    pkt_set_code(&hello_pkt, PCODE_HELLO);
+    pkt_set_code(&hello_pkt, hell);
     pkt_encode(&hello_pkt, buf_hello);
 
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
@@ -211,7 +211,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
         else if(ev == tcpip_event){
             PRINTF("hello tcp\n");
             tcpip_handler();
-            helloDeviceDone = 1;
             etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
 
         }
