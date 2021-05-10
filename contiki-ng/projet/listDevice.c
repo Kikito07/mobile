@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../os/net/app-layer/packet/packet.h"
+
 
 list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 {
@@ -69,12 +69,11 @@ int isNotInList(list_device_t *list,struct sockaddr_in6 *addr){
 
 //insert link at the first location
 
-void sendToDevice(list_device_t *list, device_t device, int index, char * buf){
+struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int index, char * buf){
     
     size_t enc_pkt_size = 6;
     node_device_t *ptr = list->head;
     int i = 0;
-
     //start from the beginning
     while (ptr != NULL)
     {        
@@ -89,13 +88,16 @@ void sendToDevice(list_device_t *list, device_t device, int index, char * buf){
                             sizeof(*(ptr->addr)));
                 if(err < 0){
                     perror("failed to send : ");
+                    return NULL;
                 }
+                return ptr->addr;
                 
             }
         }
         ptr = ptr->next;
 
     }
+    return NULL;
     
 }
 void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer)
@@ -200,7 +202,7 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
     {
         // printf("timer diff : %d\n", (timer - (current -> timer)));
         // printf("r_timer = %d \n", list->r_timer);
-        printf("device = %u\n",current->device);
+        // printf("device = %u\n",current->device);
 
 
         if((timer-(current -> timer)) > list->r_timer){

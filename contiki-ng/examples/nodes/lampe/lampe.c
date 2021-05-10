@@ -71,6 +71,7 @@ handle_packet()
             leds_on(LEDS_RED);
             uint8_t one = 1;
             pkt_set_ack(&pkt,one);
+            PRINTF("ddddddddddddd");
             PRINTF("ack : %u\n",pkt_get_ack(&pkt));
         }
         if (post_type == PTYPE_LIGHT_OFF)
@@ -78,7 +79,7 @@ handle_packet()
             leds_off(LEDS_RED);
         }
     }
-    pkt_set_code(&pkt, PCODE_ACK);
+    pkt_set_ack(&pkt, 1);
     pkt_encode(&pkt, buf);
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
     server_conn->rport = UIP_UDP_BUF->srcport;

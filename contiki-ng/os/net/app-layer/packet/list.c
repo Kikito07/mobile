@@ -15,7 +15,8 @@ list_t *init_list(int sockfd,unsigned long r_timer)
     list->head = NULL;
     list->last = NULL;
     list->sockfd = sockfd;
-    list->r_timer;
+    list->r_timer = r_timer;
+    printf("inside init : %lu", list->r_timer);
     return list;
 }
 
@@ -114,7 +115,12 @@ int reTransmit(list_t *list,unsigned long timer)
     //navigate through list
     while (current != NULL)
     {
+        // printf("r_timer : %lu\n",list->r_timer);
+        // printf("diff : %lu\n",timer-(current -> timer));
+
         if((timer-(current -> timer)) > list->r_timer){
+
+            printf("in timer\n");
 
             char buf[10];
             pkt_t pkt = current->pkt;
@@ -122,7 +128,8 @@ int reTransmit(list_t *list,unsigned long timer)
             int err = sendto(list->sockfd, buf, sizeof(int),
                          MSG_CONFIRM, (const struct sockaddr *)&current->addr,
                          sizeof(current->addr));
-            if(err < 0){  
+            if(err < 0){
+                perror("send error : ");  
                 return -1;
             }
             current->timer = timer;   
@@ -150,6 +157,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
     //navigate through list
     while ((current->pkt.msgid != msgid) && (current->pkt.token != token))
     {
+        printf("inside delete : \n");
         
         //if it is last node
         if (current->next == NULL)
@@ -164,7 +172,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
             current = current->next;
         }
     }
-
+    printf("out of while \n");
     //found a match, update the link
     node_t *tmp = current;
     if (current == head)

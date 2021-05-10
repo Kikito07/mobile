@@ -5,9 +5,9 @@
 #include <sys/socket.h>
 
 typedef struct node {
-   pkt_t pkt;
-   struct node *next;
-   unsigned long timer;
+  pkt_t pkt;
+  struct node *next;
+  unsigned long timer;
   struct sockaddr_in6 addr;
 }node_t;
 
@@ -16,7 +16,7 @@ typedef struct List // list structure
   node_t *head; // head of list
   node_t *last;  // tail of list
   int sockfd;
-  int r_timer;
+  unsigned long r_timer;
 } list_t;
 
 

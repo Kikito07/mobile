@@ -42,25 +42,31 @@ size_t enc_pkt_size = 6;
 lamp_types_t post_type;
 
 
-// int ackRoutine(pkt_t pkt_routine){
-//     printf("hello\n");
-//     uint8_t one = 1;
-//     printf("receive ack : %u\n", pkt_get_ack(&pkt_routine));
-//     if(pkt_get_ack(&pkt_routine)==one){
-//         printf("je  suis rentreeeee \n");
-//         uint8_t id = pkt_get_msgid(&pkt_routine);
-//         printf("j'ai planté ici les mouks \n");
-//         uint8_t token = pkt_get_token(&pkt_routine);
-//         printf("j'ai planté ici les mouks2 \n");
-//         printf("received id : %u\n",id);
-//         printf("receive token : %u\n", token);
-    
-//         delete (id, token, list);
-//     }
-// }
+uint8_t giveToken(){
+    int i;
+    for(i = 0; i < 128;i++){
+        if(usedToken[i]==false){
+            break;
+        }
+    }
+    return i;
+}
+
 unsigned long timer(){
     return clock()*1000 /CLOCKS_PER_SEC;
 }
+int ackRoutine(pkt_t pkt_routine){
+    
+    uint8_t one = 1;
+
+    if(pkt_get_ack(&pkt_routine)==one){
+        
+        uint8_t id = pkt_get_msgid(&pkt_routine);
+        uint8_t token = pkt_get_token(&pkt_routine);
+        delete(id, token, list);
+    }
+}
+
 
 pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t msgid, uint8_t token, char * payload){
     pkt_t *new_pkt = pkt_new();
@@ -104,11 +110,12 @@ int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
 
 int handlePacket(char* b,struct sockaddr_in6* nAddr){
 
-    pkt_t pktHandle ;
+    pkt_t pktHandle;
     if(PKT_OK != pkt_decode(b,&pktHandle)){
         return -1;
     }
     receivHello(pktHandle, nAddr);
+    ackRoutine(pktHandle);
 
 }
 void *inputThread(void *empty)
@@ -117,7 +124,6 @@ void *inputThread(void *empty)
 
     while (true)
     {   
-
         memset(&servaddrToSend, 0, sizeof(servaddrToSend));
         servaddrToSend.sin6_family = AF_INET6;
         servaddrToSend.sin6_port = htons(PORT);
@@ -128,7 +134,11 @@ void *inputThread(void *empty)
         int init_size = strlen(string);
         char delim[] = " ";
         char *device = strtok(string, delim);
-        int index = atoi(strtok(NULL, delim));
+        char * index_c = strtok(NULL, delim);
+        int index = 0;
+        if(index_c != NULL){
+            index = atoi(index_c);
+        }
         char *action = strtok(NULL, delim);
         printf("device : %s\n", device);
         printf("index : %d \n", index);
@@ -142,7 +152,10 @@ void *inputThread(void *empty)
                 post_type = PTYPE_LIGHT_ON;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
                 pkt_encode(pkt, buf);
-                sendToDevice(list_device, LAMP, index,buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list,*d_addr);
+                }
 
             }
             
@@ -157,10 +170,6 @@ void *inputThread(void *empty)
                 }
             }
             
-
-
-
-            
             err = sendto(sockfd, buf, enc_pkt_size,
                          MSG_CONFIRM, (const struct sockaddr *)&servaddrToSend,
                          sizeof(nodeAddr));
@@ -171,6 +180,10 @@ void *inputThread(void *empty)
 
         }
         else if((strcmp(device, "list") == 0)){
+            printList(list);
+            printf("\n");
+        }
+        else if((strcmp(device, "listdev") == 0)){
             printListDevice(list_device);
             printf("\n");
         }
@@ -184,9 +197,6 @@ int main()
     for(int i = 0;i<128;i++){
         usedToken[i] = false;
     }
-
-    
-
     if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
     {
         perror("socket creation failed");
@@ -197,6 +207,7 @@ int main()
     if(list == NULL){
         printf("malloc failed");
     }
+    printf("r_timer : %lu\n", list->r_timer);
     list_device = init_listDevice(sockfd,10*1000);
     if(list == NULL){
         printf("malloc failed");
@@ -229,6 +240,7 @@ int main()
     int n, len, rc;
     while (true)
     {
+        
         rc = poll(fds, 1, 0);
         if (rc == -1)
         {
@@ -243,8 +255,9 @@ int main()
             struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
             memcpy(mallocedNodeAddr,&nodeAddr,sizeof(nodeAddr));
             handlePacket(bufMain,mallocedNodeAddr);
-
         }
+        reTransmit(list,timer());
+        // deleteTOutDevice (list_device,timer());
     }
     pthread_join(thread_id, NULL);
     printf("After Thread\n");
