@@ -281,7 +281,7 @@ int main()
             }
             
         }
-        reTransmit(list,timer());
+        // reTransmit(list,timer());
         // deleteTOutDevice (list_device,timer());
     }
     pthread_join(thread_id, NULL);
