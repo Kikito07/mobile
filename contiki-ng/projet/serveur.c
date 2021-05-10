@@ -26,6 +26,7 @@ int number = 127;
 struct sockaddr_in6 nodeAddr;
 struct sockaddr_in6 myaddress;
 char buf[10];
+char buf2[10];
 char bufMain[6];
 uint8_t msgid = 1;
 pkt_t *pkt;
@@ -69,11 +70,11 @@ unsigned long timer(){
 }
 int ackRoutine(pkt_t pkt_routine){
     
-    printf("acktype : %u\n",pkt_get_ack(&pkt_routine));
+    // printf("acktype : %u\n",pkt_get_ack(&pkt_routine));
     if(pkt_get_ack(&pkt_routine)==1){
-        printf("token : %u\n",pkt_get_token(&pkt_routine));
-        printf("msgid : %u\n",pkt_get_msgid(&pkt_routine));
-        printf("ack received\n");
+        // printf("token : %u\n",pkt_get_token(&pkt_routine));
+        // printf("msgid : %u\n",pkt_get_msgid(&pkt_routine));
+        // printf("ack received\n");
         uint8_t id = pkt_get_msgid(&pkt_routine);
         uint8_t token = pkt_get_token(&pkt_routine);
         delete(id, token, list);
@@ -104,7 +105,6 @@ pkt_t *composePacket(pcode_t code, uint8_t ack, query_t qr, uint8_t token, char 
 
 }
 
-int 
 
 int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
     uint8_t code = pkt_get_code(&pktHello);
@@ -112,8 +112,19 @@ int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
     if(code = PCODE_HELLO ){
         device_t device = pkt_get_device(&pktHello);
         if(token == 0){
+            printf("giving token\n");
             //adding to the list of device
+            uint8_t newToken = giveToken();
+            pkt_set_payload(&pktHello,&newToken,1);
+            pkt_encode(&pktHello, buf2);
             insertLastDevice(list_device,nAddr,token, device,timer());
+            int err = sendto(sockfd, buf2, enc_pkt_size,
+                         MSG_CONFIRM, (const struct sockaddr *)nAddr,
+                         sizeof(struct sockaddr_in6));
+            if(err < 0){
+                perror("send token error:");
+            }
+
         }
         else{
             refreshDevice(list_device,token,timer());
@@ -296,7 +307,7 @@ int main()
             
         }
         reTransmit(list,timer());
-        deleteTOutDevice(list_device,timer());
+        // deleteTOutDevice(list_device,timer());
     }
     pthread_join(thread_id, NULL);
     printf("After Thread\n");

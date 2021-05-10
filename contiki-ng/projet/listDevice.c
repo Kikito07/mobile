@@ -112,7 +112,6 @@ void refreshDevice(list_device_t *list,uint8_t token, unsigned long timer){
         ptr = ptr->next;
 
     }
-    return NULL;
 }
 
 void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer)

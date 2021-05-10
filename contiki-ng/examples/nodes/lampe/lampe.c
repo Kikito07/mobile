@@ -57,9 +57,6 @@ static uint8_t token = 0;
 static void 
 handle_packet()
 {   
-    if(helloDeviceDone == 0){
-        token 
-    }
     pkt_t pkt;
     
     if (PKT_OK != pkt_decode(buf, &pkt))
@@ -68,7 +65,8 @@ handle_packet()
     }
     if(pkt_get_code(&pkt) == PCODE_HELLO){
         if(helloDeviceDone == 0){
-            token = (uint8_t *)pkt_get_payload(&pkt);
+            PRINTF("inside token\n");
+            token = *(pkt_get_payload(&pkt));
         }
     }
 
