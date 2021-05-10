@@ -17,10 +17,6 @@
 #define MAXLINE 1024
 
 #define SERVERADDRESS "bbbb::c30c:0:0:5"
-#define NODE1ADDR "bbbb::c30c:0:0:1"
-#define NODE2ADDR "bbbb::c30c:0:0:2"
-#define NODE3ADDR "bbbb::c30c:0:0:3"
-#define NODE4ADDR "bbbb::c30c:0:0:4"
 
 //bbbb::1 => serveur addr
 char *buffer[MAXLINE];
@@ -28,8 +24,8 @@ int sockfd;
 int number = 127;
 struct sockaddr_in6 nodeAddr;
 struct sockaddr_in6 myaddress;
-char buf[5];
-char bufMain[5];
+char buf[10];
+char bufMain[6];
 uint8_t msgid = 1;
 pkt_t *pkt;
 struct pollfd fds[1];
@@ -41,6 +37,23 @@ bool usedToken[128];
 size_t enc_pkt_size = 6;
 lamp_types_t post_type;
 
+
+
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = 0; i < size; i++) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+        printf("\n");
+    }
+    puts("");
+}
 
 uint8_t giveToken(){
     int i;
@@ -98,7 +111,6 @@ int receivHello(pkt_t pktHello,struct sockaddr_in6* nAddr){
             //adding to the list of device
             device_t device = pkt_get_device(&pktHello);
             insertLastDevice(list_device,nAddr,token, device,timer());
-
         }
     }
     else{
@@ -152,6 +164,7 @@ void *inputThread(void *empty)
                 post_type = PTYPE_LIGHT_ON;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
                 pkt_encode(pkt, buf);
+                printBits(5,buf);
                 struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
                 if(d_addr != NULL){
                     insertFirst(*pkt,list,*d_addr);
@@ -163,10 +176,12 @@ void *inputThread(void *empty)
             {
 
                 post_type = PTYPE_LIGHT_OFF;
-
-                err = inet_pton(AF_INET6, NODE1ADDR, &servaddrToSend.sin6_addr);
-                if (err <= 0){
-                    printf("error");
+                pkt_t *pkt = composePacket(PCODE_POST, 0, QUERY, 1, 1, (char *)&post_type);
+                pkt_encode(pkt, buf);
+                printBits(5,buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list,*d_addr);
                 }
             }
             
@@ -190,7 +205,17 @@ void *inputThread(void *empty)
     }
 }
 
-
+void ipv6_to_str_unexpanded(char * str, const struct in6_addr * addr) {
+   sprintf(str, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                 (int)addr->s6_addr[0], (int)addr->s6_addr[1],
+                 (int)addr->s6_addr[2], (int)addr->s6_addr[3],
+                 (int)addr->s6_addr[4], (int)addr->s6_addr[5],
+                 (int)addr->s6_addr[6], (int)addr->s6_addr[7],
+                 (int)addr->s6_addr[8], (int)addr->s6_addr[9],
+                 (int)addr->s6_addr[10], (int)addr->s6_addr[11],
+                 (int)addr->s6_addr[12], (int)addr->s6_addr[13],
+                 (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
+}
 
 int main()
 {
@@ -221,17 +246,9 @@ int main()
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-    memset(&nodeAddr, 0, sizeof(nodeAddr));
-    nodeAddr.sin6_family = AF_INET6;
-    nodeAddr.sin6_port = htons(PORT);
-    int err;
-    err = inet_pton(AF_INET6, NODE1ADDR, &nodeAddr.sin6_addr);
-    if (err <= 0)
-    {
-        printf("error");
-    }
     fds[0].fd = sockfd;
     fds[0].events = POLLIN;
+    fds[0].revents = 0;
 
     pthread_t thread_id;
     printf("Before Thread\n");
@@ -248,13 +265,21 @@ int main()
         }
         if (rc > 0)
         {
+            struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *)malloc(sizeof(struct sockaddr_in6));
+            if(mallocedNodeAddr == NULL){
+                printf("malloced failed\n");
+            }
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
-                         MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
+                         MSG_WAITALL, (struct sockaddr *)mallocedNodeAddr, &len);
             bufMain[n] = '\0';
-            //this is sketchy
-            struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
-            memcpy(mallocedNodeAddr,&nodeAddr,sizeof(nodeAddr));
-            handlePacket(bufMain,mallocedNodeAddr);
+            
+            if(n>0){
+                handlePacket(bufMain,mallocedNodeAddr);
+            }
+            else{
+                free(mallocedNodeAddr);
+            }
+            
         }
         reTransmit(list,timer());
         // deleteTOutDevice (list_device,timer());

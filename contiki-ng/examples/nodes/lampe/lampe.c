@@ -44,6 +44,7 @@ AUTOSTART_PROCESSES(&udp_server_process);
 
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
+static char buf_hello[MAX_PAYLOAD_LEN];
 static uint16_t len;
 static struct etimer timer;
 static int helloDeviceDone = 0;
@@ -100,7 +101,7 @@ tcpip_handler(void)
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
         PRINTF("]:%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
         handle_packet();
-        printf("packet : %u", *buf);
+        printf("packet : %u \n", *buf);
     #if SERVER_REPLY
         uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
         server_conn->rport = UIP_UDP_BUF->srcport;
@@ -169,7 +170,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     pkt_set_msgid(&hello_pkt,msgid);
     pkt_set_token(&hello_pkt,token);
     pkt_set_code(&hello_pkt, PCODE_HELLO);
-    pkt_encode(&hello_pkt, buf);
+    pkt_encode(&hello_pkt, buf_hello);
 
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
@@ -179,15 +180,14 @@ PROCESS_THREAD(udp_server_process, ev, data)
         PROCESS_YIELD();
         if (ev == PROCESS_EVENT_TIMER)
         {
-            PRINTF("normal pritn\n");
+            // PRINTF("normal pritn\n");
             
             if(helloDeviceDone == 0){
-                uip_udp_packet_send(server_conn, buf, pkt_size);
-                PRINTF("HELLO\n");
+                uip_udp_packet_send(server_conn, buf_hello, pkt_size);
+                // PRINTF("HELLO\n");
 
             }
             else{
-                PRINTF("SENDHELLO\n");
             }
             etimer_reset(&timer);
             

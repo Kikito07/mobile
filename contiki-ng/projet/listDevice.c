@@ -71,7 +71,6 @@ int isNotInList(list_device_t *list,struct sockaddr_in6 *addr){
 
 struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int index, char * buf){
     
-    size_t enc_pkt_size = 6;
     node_device_t *ptr = list->head;
     int i = 0;
     //start from the beginning
@@ -82,7 +81,6 @@ struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int inde
         if(dev == device){
             i++;
             if(i == index){
-                
                 int err = sendto(list->sockfd, buf, list->enc_pkt_size,
                             MSG_CONFIRM, (const struct sockaddr *)ptr->addr,
                             sizeof(*(ptr->addr)));
