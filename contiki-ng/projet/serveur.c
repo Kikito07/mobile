@@ -17,6 +17,7 @@
 #define MAXLINE 1024
 
 #define SERVERADDRESS "bbbb::c30c:0:0:5"
+#define NODE1ADDR "b::1"
 
 //bbbb::1 => serveur addr
 char *buffer[MAXLINE];
@@ -246,6 +247,15 @@ int main()
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
+    memset(&nodeAddr, 0, sizeof(nodeAddr));
+    nodeAddr.sin6_family = AF_INET6;
+    nodeAddr.sin6_port = htons(PORT);
+    int err;
+    err = inet_pton(AF_INET6, NODE1ADDR, &nodeAddr.sin6_addr);
+    if (err <= 0)
+    {
+        printf("error");
+    }
     fds[0].fd = sockfd;
     fds[0].events = POLLIN;
     fds[0].revents = 0;
@@ -258,27 +268,23 @@ int main()
     while (true)
     {
         
-        rc = poll(fds, 1, 0);
+        rc = poll(fds, 1, 50);
         if (rc == -1)
         {
             printf("error");
         }
         if (rc > 0)
         {
-            struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *)malloc(sizeof(struct sockaddr_in6));
-            if(mallocedNodeAddr == NULL){
-                printf("malloced failed\n");
-            }
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
-                         MSG_WAITALL, (struct sockaddr *)mallocedNodeAddr, &len);
+                         MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
-            
-            if(n>0){
-                handlePacket(bufMain,mallocedNodeAddr);
+            //this is sketchy
+            if(n < 0){
+                printf("fail \n");
             }
-            else{
-                free(mallocedNodeAddr);
-            }
+            struct sockaddr_in6 * mallocedNodeAddr = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
+            memcpy(mallocedNodeAddr,&nodeAddr,sizeof(nodeAddr));
+            handlePacket(bufMain,mallocedNodeAddr);
             
         }
         // reTransmit(list,timer());
