@@ -107,8 +107,8 @@ int handlePacket(char* b,struct sockaddr_in6* nAddr){
     }
     struct sockaddr_in6 * mallocedNodeAddr1 = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
     struct sockaddr_in6 * mallocedNodeAddr2 = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
-    memcpy(mallocedNodeAddr1,nAddr,sizeof(*nAddr));
-    memcpy(mallocedNodeAddr2,nAddr,sizeof(*nAddr));
+    memcpy(mallocedNodeAddr1,nAddr,sizeof(struct sockaddr_in6));
+    memcpy(mallocedNodeAddr2,nAddr,sizeof(struct sockaddr_in6));
     free(nAddr);
     receivHello(pktHandle, mallocedNodeAddr1);
     ackRoutine(pktHandle,mallocedNodeAddr2);
@@ -173,6 +173,12 @@ void *inputThread(void *empty)
             }
 
         }
+        // else if((strcmp(device, "temp") == 0){
+        //     if(strcmp(action, "off") == 0){
+
+        //     }
+        // }
+        
         else if((strcmp(device, "list") == 0)){
             printList(list);
             printf("\n");
