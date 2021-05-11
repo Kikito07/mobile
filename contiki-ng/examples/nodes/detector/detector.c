@@ -87,7 +87,7 @@ handle_packet(int sensor)
                 activate = 1;
 
             }
-            if (post_type == DEACTIVATE)
+            if (post_type == DESACTIVATE)
             {
 
                 leds_off(LEDS_RED);
@@ -101,7 +101,7 @@ handle_packet(int sensor)
                 pkt_set_payload(&pkt, ((const char*)&act),2);
             }
             else{
-                alarm_types_t act = DEACTIVATE;
+                alarm_types_t act = DESACTIVATE;
                 pkt_set_payload(&pkt,(const char*)&act,2);
             }
             
@@ -109,6 +109,8 @@ handle_packet(int sensor)
     }
     if( sensor == 1){
 
+        PRINTF("SENSEUR ALOO ALOOO MAX VERSTAPPEN EST SURPER NULL");
+        
         pkt_set_code(&pkt, PCODE_ALARM);
 
         pkt_set_msgid(&pkt, 0);

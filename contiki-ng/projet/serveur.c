@@ -136,6 +136,11 @@ void *inputThread(void *empty)
             index = atoi(index_c);
         }
         char *action = strtok(NULL, delim);
+        char * value_c = strtok(NULL, delim);
+        int value = 0;
+        if(index_c != NULL){
+            value = atoi(value_c);
+        }
         printf("device : %s\n", device);
         printf("index : %d \n", index);
         printf("action : %s\n", action);
@@ -173,11 +178,69 @@ void *inputThread(void *empty)
             }
 
         }
-        // else if((strcmp(device, "temp") == 0){
-        //     if(strcmp(action, "off") == 0){
+        else if((strcmp(device, "temp") == 0)){
+            if((strcmp(action, "set") == 0)){
 
-        //     }
-        // }
+                pkt_t *pkt = composePacket(PCODE_POST, 0,(uint8_t *)&value);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list, d_addr,timer()); 
+                }                
+
+            }
+
+            else if(((strcmp(action, "getmp") == 0))){
+                warmer_types_t post_type = PTYPE_SENS;
+                pkt_t *pkt = composePacket(PCODE_GET, 0,(char *)&post_type);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list, d_addr,timer()); 
+                }
+                
+            }
+
+            else if(((strcmp(action, "getherm") == 0))){
+                warmer_types_t post_type = PTYPE_THERM;
+                pkt_t *pkt = composePacket(PCODE_GET, 0,(char *)&post_type);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list, d_addr,timer()); 
+                }
+            }
+        }
+
+
+        else if((strcmp(device, "detect") == 0)){
+
+            if(((strcmp(action, "on") == 0))){
+
+                alarm_types_t post_type = ACTIVATE;
+                pkt_t *pkt = composePacket(PCODE_POST, 0,(char *)&post_type);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list, d_addr,timer()); 
+                }
+
+            }
+
+            else if(((strcmp(action, "off") == 0))){
+
+                alarm_types_t post_type = DESACTIVATE;
+                pkt_t *pkt = composePacket(PCODE_POST, 0,(char *)&post_type);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                if(d_addr != NULL){
+                    insertFirst(*pkt,list, d_addr,timer()); 
+                }
+
+            }
+        }
+
+
         
         else if((strcmp(device, "list") == 0)){
             printList(list);

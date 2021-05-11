@@ -50,7 +50,7 @@ typedef enum {
 
 typedef enum {
   ACTIVATE = 1,
-  DEACTIVATE = 2,
+  DESACTIVATE = 2,
 } alarm_types_t;
 
 /* Taille maximale permise pour le payload */
