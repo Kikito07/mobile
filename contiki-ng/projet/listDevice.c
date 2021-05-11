@@ -109,9 +109,10 @@ void refreshDevice(list_device_t *list,struct sockaddr_in6 * addr, unsigned long
     while (ptr != NULL)
     {
         i++;
-        printf("device : %d refreshed\n",i);
+        
         if(compare_ipv6Bis(&(ptr->addr->sin6_addr),&addr->sin6_addr) == 0){
             ptr->timer = timer;
+            printf("device : %d refreshed\n",i);
 
         }
         ptr = ptr->next;
