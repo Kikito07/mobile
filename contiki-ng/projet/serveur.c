@@ -172,11 +172,6 @@ void *inputThread(void *empty)
                 }
             }
             
-            if (err < 0)
-            {
-                perror("Error printed by perror");
-            }
-
         }
         else if((strcmp(device, "temp") == 0)){
             if((strcmp(action, "set") == 0)){
