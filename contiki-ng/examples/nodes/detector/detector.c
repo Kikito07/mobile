@@ -50,7 +50,6 @@ static struct etimer timer;
 static int helloDeviceDone = 0;
 static uip_ipaddr_t ipaddr;
 static size_t pkt_size = 5;
-static uint8_t token = 0;
 static pkt_t hello_pkt;
 static int activate = 0;
 
@@ -93,7 +92,7 @@ handle_packet(int sensor)
         }
 
         else if((pkt_get_code(&pkt)) == PCODE_GET){
-            if(activate = 1){
+            if(activate == 1){
                 alarm_types_t act = ACTIVATE;
                 pkt_set_payload(&pkt, ((const char*)&act),2);
             }
@@ -173,7 +172,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
     uint8_t msgid = 5;
     pcode_t hell = PCODE_HELLO;
     pkt_set_msgid(&hello_pkt,msgid);
-    pkt_set_token(&hello_pkt,token);
     pkt_set_code(&hello_pkt, hell);
     pkt_encode(&hello_pkt, buf_hello);
 
