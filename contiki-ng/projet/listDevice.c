@@ -5,6 +5,19 @@
 #include <stdbool.h>
 
 
+int compare_ipv6Bis(struct in6_addr *ipA, struct in6_addr *ipB)
+{
+    int i = 0;
+    for(i = 0; i < 16; ++i)
+    {
+        if (ipA->s6_addr[i] < ipB->s6_addr[i])
+            return -1;
+        else if (ipA->s6_addr[i] > ipB->s6_addr[i])
+            return 1;
+    }
+    return 0;
+}
+
 list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 {
     list_device_t *list = malloc(sizeof(list_device_t));
@@ -16,7 +29,7 @@ list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
     list->last = NULL;
     list->r_timer = r_timer;
     list->sockfd = sockfd;
-    list->enc_pkt_size = 6;
+    list->enc_pkt_size = 5;
     return list;
 }
 
@@ -28,25 +41,14 @@ void printListDevice(list_device_t *list)
     //start from the beginning
     while (ptr != NULL)
     {
-        printf("device : %u , token : %u \n", (ptr->device),(ptr->token));
+        printf("device : %u\n", (ptr->device));
         ptr = ptr->next;
     }
 
     printf(" ]");
 }
 
-int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
-{
-    int i = 0;
-    for(i = 0; i < 16; ++i) // Don't use magic number, here just for example
-    {
-        if (ipA->s6_addr[i] < ipB->s6_addr[i])
-            return -1;
-        else if (ipA->s6_addr[i] > ipB->s6_addr[i])
-            return 1;
-    }
-    return 0;
-}
+
 
 int isNotInList(list_device_t *list,struct sockaddr_in6 *addr){
     node_device_t *ptr = list->head;
@@ -55,8 +57,8 @@ int isNotInList(list_device_t *list,struct sockaddr_in6 *addr){
     while (ptr != NULL)
     {        
         struct sockaddr_in6 *listAddr = ptr->addr;
-
-        if(compare_ipv6(&listAddr->sin6_addr,&addr->sin6_addr) == 0){
+       
+        if(compare_ipv6Bis(&listAddr->sin6_addr,&addr->sin6_addr) == 0){
             return 0;
         }
         ptr = ptr->next;
@@ -98,24 +100,26 @@ struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int inde
     return NULL;
     
 }
-void refreshDevice(list_device_t *list,uint8_t token, unsigned long timer){
+
+
+void refreshDevice(list_device_t *list,struct sockaddr_in6 * addr, unsigned long timer){
     node_device_t *ptr = list->head;
     int i = 0;
     //start from the beginning
     while (ptr != NULL)
-    {        
-        uint8_t tok = ptr->token;
-
-        if(token == tok){
+    {
+        if(compare_ipv6Bis(&(ptr->addr->sin6_addr),&addr->sin6_addr) == 0){
             ptr->timer = timer;
+
         }
         ptr = ptr->next;
 
     }
 }
 
-void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t token, device_t device, unsigned long timer)
+void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr, device_t device, unsigned long timer)
 {
+
 
     if(1 == isNotInList(list,addr)){
         printf("hello insert\n");
@@ -124,8 +128,6 @@ void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t tok
         node_device_t *link = (node_device_t *)malloc(sizeof(node_device_t));
     
         link->addr = addr;
-
-        link-> token = token; 
 
         //point it to old first node
         link->device = device;
@@ -144,6 +146,11 @@ void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr,uint8_t tok
             current = current->next;
         }
         current->next = link;
+    }
+    else{
+
+        refreshDevice(list, addr,timer);
+        free(addr);
     }
 
 }
@@ -168,37 +175,37 @@ int lengthDevice(list_device_t *list)
 }
 
 //find a link with given key
-node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list)
-{
+// node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list)
+// {
 
-    node_device_t *head = list->head;
+//     node_device_t *head = list->head;
 
-    //start from the first link
-    node_device_t *current = head;
+//     //start from the first link
+//     node_device_t *current = head;
 
-    //if list is empty
-    if (head == NULL)
-    {
-        return NULL;
-    }
+//     //if list is empty
+//     if (head == NULL)
+//     {
+//         return NULL;
+//     }
 
-    //navigate through list
-    while ((current->token != token) && (current->device != device))
-    {
-        //if it is last node
-        if (current->next == NULL)
-        {
-            return NULL;
-        }
-        else
-        {
-            //go to next link
-            current = current->next;
-        }
-    }
-    //if data found, return the current Link
-    return current;
-}
+//     //navigate through list
+//     while ((current->token != token) && (current->device != device))
+//     {
+//         //if it is last node
+//         if (current->next == NULL)
+//         {
+//             return NULL;
+//         }
+//         else
+//         {
+//             //go to next link
+//             current = current->next;
+//         }
+//     }
+//     //if data found, return the current Link
+//     return current;
+// }
 
 //delete a link with given key
 int deleteTOutDevice (list_device_t *list,unsigned long timer)
@@ -220,6 +227,7 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
 
 
         if((timer-(current -> timer)) > list->r_timer){
+            printf("lost connection with device\n");
             node_device_t *tmp = current;
             if (current == list->head)
             {

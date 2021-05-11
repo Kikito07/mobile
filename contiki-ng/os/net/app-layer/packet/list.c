@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "packet.h"
 
+
 list_t *init_list(int sockfd,unsigned long r_timer)
 {
     list_t *list = malloc(sizeof(list_t));
@@ -34,7 +35,7 @@ void printList(list_t *list)
 }
 
 //insert link at the first location
-void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 addr,unsigned long timer)
+void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 *addr,unsigned long timer)
 {
     node_t *head = list->head;
     //create a link
@@ -142,8 +143,21 @@ int reTransmit(list_t *list,unsigned long timer)
 return 1;
 }
 
-//delete a link with given key
-node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
+int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
+{
+    int i = 0;
+    for(i = 0; i < 16; ++i)
+    {
+        if (ipA->s6_addr[i] < ipB->s6_addr[i])
+            return -1;
+        else if (ipA->s6_addr[i] > ipB->s6_addr[i])
+            return 1;
+    }
+    return 0;
+}
+
+
+node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
 {
 
     node_t *head = list->head;
@@ -158,7 +172,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
     }
 
     //navigate through list
-    while ((current->pkt.msgid != msgid) && (current->pkt.token != token))
+    while ((current->pkt.msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr),&addr->sin6_addr) != 0)
     {
         printf("inside delete : \n");
         
@@ -175,7 +189,6 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
             current = current->next;
         }
     }
-    printf("out of while \n");
     //found a match, update the link
     node_t *tmp = current;
     if (current == head)
@@ -188,6 +201,7 @@ node_t *delete (uint8_t msgid, uint8_t token, list_t *list)
         //bypass the current link
         previous->next = current->next;
     }
+    free(tmp->addr);
     free(tmp);
     return NULL;
 }
