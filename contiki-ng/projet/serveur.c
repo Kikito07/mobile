@@ -138,7 +138,7 @@ void *inputThread(void *empty)
         char *action = strtok(NULL, delim);
         char * value_c = strtok(NULL, delim);
         int value = 0;
-        if(index_c != NULL){
+        if(value_c != NULL){
             value = atoi(value_c);
         }
         printf("device : %s\n", device);
