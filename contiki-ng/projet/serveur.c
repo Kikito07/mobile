@@ -109,7 +109,7 @@ int handlePacket(char* b,struct sockaddr_in6* nAddr){
     struct sockaddr_in6 * mallocedNodeAddr2 = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
     memcpy(mallocedNodeAddr1,nAddr,sizeof(*nAddr));
     memcpy(mallocedNodeAddr2,nAddr,sizeof(*nAddr));
-
+    free(nAddr);
     receivHello(pktHandle, mallocedNodeAddr1);
     ackRoutine(pktHandle,mallocedNodeAddr2);
 
