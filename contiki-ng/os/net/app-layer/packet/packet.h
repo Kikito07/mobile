@@ -12,6 +12,8 @@ typedef enum{
   LAMP = 0,
   TEMP = 1,
   SERV = 2,
+  ALARM = 3,
+  DETECTOR = 4,
 } device_t;
 
 
@@ -26,6 +28,7 @@ typedef enum {
   PCODE_POST = 2,
   PCODE_ACK = 3,
   PCODE_HELLO = 4,
+  PCODE_ALARM = 5,
 } pcode_t;
 
 /*   types de get packet */
@@ -107,9 +110,8 @@ pkt_status_code pkt_set_payload(pkt_t *, const char *data,
 
 pkt_status_code pkt_set_device(pkt_t *pkt,device_t device);
 
-pkt_status_code pkt_set_token(pkt_t *pkt,uint8_t token);
 pkt_status_code pkt_set_ack(pkt_t *pkt,uint8_t ack);
-pkt_status_code pkt_set_query(pkt_t *pkt,uint8_t qr);
+
 
 
 
