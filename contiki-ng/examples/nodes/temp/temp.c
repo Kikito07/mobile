@@ -41,12 +41,15 @@ AUTOSTART_PROCESSES(&udp_server_process);
 
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
-// static char buf_hello[MAX_PAYLOAD_LEN];
-// static uint16_t len;
-// static struct etimer timer;
+static char buf_hello[MAX_PAYLOAD_LEN];
+static uint16_t len;
+static struct etimer timer;
 // static int helloDeviceDone = 0;
-// static uip_ipaddr_t ipaddr;
-// static size_t pkt_size = 5;
+static uip_ipaddr_t ipaddr;
+static size_t pkt_size = 5;
+static device_t device = TEMP;
+static uint8_t msgid = 0;
+static pcode_t hello = PCODE_HELLO;
 // static uint8_t token = 0;
 // static pkt_t hello_pkt;
 /*---------------------------------------------------------------------------*/
@@ -141,29 +144,41 @@ tcpip_handler(void)
 
 PROCESS_THREAD(udp_server_process, ev, data)
 {
-
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
-
-   
     
     // leds_toogle(LEDS_BLUE);
 
 #if SERVER_RPL_ROOT
     create_dag();
 #endif
-    server_conn = udp_new(NULL, UIP_HTONS(0), NULL);
-    udp_bind(server_conn, UIP_HTONS(3000));
 
+    uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
+    server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
+    udp_bind(server_conn, UIP_HTONS(3000));
+    static pkt_t hello_pkt;
+    pkt_set_msgid(&hello_pkt,msgid);
+    pkt_set_code(&hello_pkt, hello);
+    pkt_set_device(&hello_pkt,device);
+    pkt_set_ack(&hello_pkt, 0);
+    pkt_encode(&hello_pkt, buf_hello);
+    
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
-    while(1) {
+    etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
+    while (1)
+    { 
         PROCESS_YIELD();
-        if(ev == tcpip_event) {
-
+        if (ev == PROCESS_EVENT_TIMER)
+        {  
+            uip_udp_packet_send(server_conn, buf_hello, pkt_size);
+            etimer_reset(&timer);
+            
+        }
+        else if(ev == tcpip_event){
+            PRINTF("tcp ip event\n");
             tcpip_handler();
         }
     }
-
     PROCESS_END();
 }
