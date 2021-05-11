@@ -53,8 +53,6 @@ typedef struct __attribute__((__packed__)) pkt {
   device_t device;
   uint8_t msgid;
   uint8_t ack;
-  query_t qr;
-  uint8_t token;
   char payload[2];
 } pkt_t;
 
