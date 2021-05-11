@@ -45,6 +45,11 @@ typedef enum {
   PTYPE_LIGHT_OFF = 2,
 } lamp_types_t;
 
+typedef enum {
+  ACTIVATE = 1,
+  DEACTIVATE = 2,
+} alarm_types_t;
+
 /* Taille maximale permise pour le payload */
 #define MAX_PAYLOAD_SIZE 2
 /* Valeur de retours des fonctions */
