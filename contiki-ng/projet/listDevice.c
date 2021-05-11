@@ -108,6 +108,8 @@ void refreshDevice(list_device_t *list,struct sockaddr_in6 * addr, unsigned long
     //start from the beginning
     while (ptr != NULL)
     {
+        i++;
+        printf("device : %d refreshed\n",i);
         if(compare_ipv6Bis(&(ptr->addr->sin6_addr),&addr->sin6_addr) == 0){
             ptr->timer = timer;
 
@@ -148,7 +150,6 @@ void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr, device_t d
         current->next = link;
     }
     else{
-
         refreshDevice(list, addr,timer);
         free(addr);
     }
@@ -224,8 +225,6 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
         // printf("timer diff : %d\n", (timer - (current -> timer)));
         // printf("r_timer = %d \n", list->r_timer);
         // printf("device = %u\n",current->device);
-
-
         if((timer-(current -> timer)) > list->r_timer){
             printf("lost connection with device\n");
             node_device_t *tmp = current;
