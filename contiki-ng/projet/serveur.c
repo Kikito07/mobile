@@ -105,8 +105,13 @@ int handlePacket(char* b,struct sockaddr_in6* nAddr){
     if(PKT_OK != pkt_decode(b,&pktHandle)){
         return -1;
     }
-    receivHello(pktHandle, nAddr);
-    ackRoutine(pktHandle,nAddr);
+    struct sockaddr_in6 * mallocedNodeAddr1 = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
+    struct sockaddr_in6 * mallocedNodeAddr2 = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
+    memcpy(mallocedNodeAddr1,nAddr,sizeof(*nAddr));
+    memcpy(mallocedNodeAddr2,nAddr,sizeof(*nAddr));
+
+    receivHello(pktHandle, mallocedNodeAddr1);
+    ackRoutine(pktHandle,mallocedNodeAddr2);
 
 }
 void *inputThread(void *empty)
