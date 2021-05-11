@@ -20,7 +20,7 @@ typedef struct listDevice // list structure
 
 } list_device_t;
 
-
+int lengthDevice(list_device_t *list,device_t device);
 void printListDevice(list_device_t *list);
 void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr, device_t device, unsigned long timer);
 list_device_t *init_listDevice(int sockfd,unsigned long r_timer);

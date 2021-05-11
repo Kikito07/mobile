@@ -84,6 +84,7 @@ handle_packet(int sensor)
             {
                 leds_on(LEDS_RED);
                 activate = 1;
+                
             }
             if (post_type == DESACTIVATE)
             {
@@ -122,10 +123,6 @@ handle_packet(int sensor)
     }
 
     pkt_encode(&pkt, buf);
-    uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
-    PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-    PRINTF(":%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
-
     uip_udp_packet_send(server_conn, buf, len);
 }
 

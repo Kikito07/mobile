@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "packet.h"
+#include <pthread.h>
 
 
 list_t *init_list(int sockfd,unsigned long r_timer)
@@ -17,6 +18,7 @@ list_t *init_list(int sockfd,unsigned long r_timer)
     list->last = NULL;
     list->sockfd = sockfd;
     list->r_timer = r_timer;
+    pthread_mutex_init(&(list->lock), NULL);
     return list;
 }
 
@@ -36,6 +38,7 @@ void printList(list_t *list)
 //insert link at the first location
 void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 *addr,unsigned long timer)
 {
+    pthread_mutex_lock(&(list->lock));
     node_t *head = list->head;
     //create a link
     node_t *link = (node_t *)malloc(sizeof(node_t));
@@ -51,6 +54,7 @@ void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 *addr,unsigned long
 
     //point first to new first node
     list->head = link;
+    pthread_mutex_unlock(&(list->lock));
 }
 //is list empty
 bool isEmpty(list_t *list)
@@ -128,9 +132,9 @@ int reTransmit(list_t *list,unsigned long timer)
             char buf[10];
             pkt_t pkt = current->pkt;
             pkt_encode(&pkt, buf);
-            int err = sendto(list->sockfd, buf, 6,
-                         MSG_CONFIRM, (const struct sockaddr *)&current->addr,
-                         sizeof(current->addr));
+            int err = sendto(list->sockfd, buf, 5,
+                         MSG_CONFIRM, (const struct sockaddr *)current->addr,
+                         sizeof(struct sockaddr_in6));
             if(err < 0){
                 perror("send error : ");  
                 return -1;

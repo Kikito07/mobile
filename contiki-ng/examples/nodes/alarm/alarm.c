@@ -78,11 +78,8 @@ handle_packet()
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
     PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
     PRINTF(":%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
-
-    server_conn->rport = UIP_UDP_BUF->srcport;
     uip_udp_packet_send(server_conn, buf, len);
-    uip_create_unspecified(&server_conn->ripaddr);
-    server_conn->rport = 0;
+
 }
 
 static void
@@ -98,13 +95,7 @@ tcpip_handler(void)
         PRINTF("]:%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
         handle_packet();
         printf("packet : %u \n", *buf);
-    #if SERVER_REPLY
-        uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
-        server_conn->rport = UIP_UDP_BUF->srcport;
-        uip_udp_packet_send(server_conn, buf, len);
-        uip_create_unspecified(&server_conn->ripaddr);
-        server_conn->rport = 0;
-    #endif
+    
     }
     return;
 }

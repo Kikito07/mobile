@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <pthread.h>
 
 typedef struct node {
   pkt_t pkt;
@@ -17,6 +18,7 @@ typedef struct List // list structure
   node_t *last;  // tail of list
   int sockfd;
   unsigned long r_timer;
+  pthread_mutex_t lock;
 } list_t;
 
 

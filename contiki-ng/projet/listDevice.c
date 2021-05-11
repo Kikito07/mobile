@@ -170,7 +170,7 @@ int lengthDevice(list_device_t *list,device_t device)
 
     for (current = list->head; current != NULL; current = current->next)
     {
-        if(current->device = device){
+        if(current->device == device){
             length++;
         }
         
