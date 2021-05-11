@@ -64,6 +64,33 @@ unsigned long timer(){
 
 int ackRoutine(pkt_t pkt_routine,struct sockaddr_in6* nAddr){
     if(pkt_get_ack(&pkt_routine)==1){
+        device_t dev = pkt_get_device(&pkt_routine);
+
+        if((pkt_get_code(&pkt_routine) == PCODE_GET) && (dev  == TEMP)){
+
+            const char *payload = pkt_get_payload(&pkt_routine);
+            warmer_types_t post_type = payload[0];
+            uint8_t temp = payload[1];
+            
+            int i  = findDevice(list_device,dev, nAddr);
+            if(i<0){
+                printf("device not found\n");
+            }
+            if(post_type == PTYPE_SENS ){
+                printf("temp of device %d is %u\n", i , temp);
+            }
+            if(post_type == PTYPE_THERM ){
+                printf("temp of the rome %d is %u\n", i , temp);
+            }
+        }
+
+        else if((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev  == DETECTOR)){
+            
+            
+            insertFirst(*pkt,list, d_addr,timer()
+            
+
+        }
         printf("hello ack\n");
         uint8_t id = pkt_get_msgid(&pkt_routine);
         delete(id, list, nAddr);
@@ -76,8 +103,6 @@ pkt_t *composePacket(pcode_t code, uint8_t ack, char * payload){
     if(new_pkt == NULL){
         printf("PKT is NULL pointer\n");
     }
-
-
     pkt_set_code(new_pkt, code);
     pkt_set_device(new_pkt,SERV);
     pkt_set_ack(new_pkt, ack);   
@@ -175,10 +200,11 @@ void *inputThread(void *empty)
         }
         else if((strcmp(device, "temp") == 0)){
             if((strcmp(action, "set") == 0)){
-
+                printf("pourtant je rentre ici");
+                printf(" tmep = %d \n", value);
                 pkt_t *pkt = composePacket(PCODE_POST, 0,(uint8_t *)&value);
                 pkt_encode(pkt, buf);
-                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, TEMP, index,buf);
                 if(d_addr != NULL){
                     insertFirst(*pkt,list, d_addr,timer()); 
                 }                
@@ -189,7 +215,7 @@ void *inputThread(void *empty)
                 warmer_types_t post_type = PTYPE_SENS;
                 pkt_t *pkt = composePacket(PCODE_GET, 0,(char *)&post_type);
                 pkt_encode(pkt, buf);
-                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, TEMP, index,buf);
                 if(d_addr != NULL){
                     insertFirst(*pkt,list, d_addr,timer()); 
                 }
@@ -200,7 +226,7 @@ void *inputThread(void *empty)
                 warmer_types_t post_type = PTYPE_THERM;
                 pkt_t *pkt = composePacket(PCODE_GET, 0,(char *)&post_type);
                 pkt_encode(pkt, buf);
-                struct sockaddr_in6* d_addr = sendToDevice(list_device, LAMP, index,buf);
+                struct sockaddr_in6* d_addr = sendToDevice(list_device, TEMP, index,buf);
                 if(d_addr != NULL){
                     insertFirst(*pkt,list, d_addr,timer()); 
                 }
@@ -275,7 +301,6 @@ int main()
     if(list == NULL){
         printf("malloc failed");
     }
-    printf("r_timer : %lu\n", list->r_timer);
     list_device = init_listDevice(sockfd,10*1000);
     if(list == NULL){
         printf("malloc failed");

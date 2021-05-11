@@ -17,7 +17,6 @@ list_t *init_list(int sockfd,unsigned long r_timer)
     list->last = NULL;
     list->sockfd = sockfd;
     list->r_timer = r_timer;
-    printf("inside init : %lu", list->r_timer);
     return list;
 }
 

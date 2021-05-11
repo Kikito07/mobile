@@ -69,8 +69,6 @@ handle_packet()
         PRINTF("je ne rentre pas dedans margoulin \n");  
         uint16_t payload = (uint16_t)*pkt_get_payload(&pkt);
         temp = payload;
-        uint8_t one = 1;
-        pkt_set_ack(&pkt,one);
     }
 
     else if (pkt_get_code(&pkt) == PCODE_GET)
@@ -78,22 +76,27 @@ handle_packet()
         PRINTF("rentre dans le get \n");
         const char *payload = pkt_get_payload(&pkt);
         warmer_types_t post_type = payload[0];
+        char tran[2];
         uint8_t one = 1;
         pkt_set_ack(&pkt,one);
         
 
 
-        if (post_type == PTYPE_SENS){
+        if (post_type == PTYPE_THERM){
             PRINTF("PTYPE_SENS\n");
-            pkt_set_payload(&pkt, (const char*)&temp ,2);
+            tran[0] = post_type;
+            tran[1] = temp;
+            pkt_set_payload(&pkt, (const char*)&tran ,2);
                 
         }
 
-        if (post_type == PTYPE_THERM){
+        if (post_type == PTYPE_SENS ){
             int ra = abs(rand());
             uint16_t randi= ra%10 + temp;
             PRINTF("PTYPE_TERM\n");
-            pkt_set_payload(&pkt, (const char*)&randi ,2);
+            tran[0] = post_type;
+            tran[1] = randi;
+            pkt_set_payload(&pkt, (const char*)&tran,2);
                 
         }
         
@@ -108,11 +111,8 @@ handle_packet()
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
     PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
     PRINTF(":%u\n", UIP_HTONS(UIP_UDP_BUF->srcport));
-
-    server_conn->rport = UIP_UDP_BUF->srcport;
     uip_udp_packet_send(server_conn, buf, len);
-    uip_create_unspecified(&server_conn->ripaddr);
-    server_conn->rport = 0;
+    
     
 }
 

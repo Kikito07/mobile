@@ -163,51 +163,56 @@ bool isEmptyListDevice(list_device_t *list)
     return head == NULL;
 }
 
-int lengthDevice(list_device_t *list)
+int lengthDevice(list_device_t *list,device_t device)
 {
     int length = 0;
     node_device_t *current;
 
     for (current = list->head; current != NULL; current = current->next)
     {
-        length++;
+        if(current->device = device){
+            length++;
+        }
+        
     }
 
     return length;
 }
 
-//find a link with given key
-// node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list)
-// {
 
-//     node_device_t *head = list->head;
+int findDevice(list_device_t *list,device_t device, struct sockaddr_in6 * addr)
+{
 
-//     //start from the first link
-//     node_device_t *current = head;
+    node_device_t *head = list->head;
 
-//     //if list is empty
-//     if (head == NULL)
-//     {
-//         return NULL;
-//     }
+    //start from the first link
+    node_device_t *current = head;
 
-//     //navigate through list
-//     while ((current->token != token) && (current->device != device))
-//     {
-//         //if it is last node
-//         if (current->next == NULL)
-//         {
-//             return NULL;
-//         }
-//         else
-//         {
-//             //go to next link
-//             current = current->next;
-//         }
-//     }
-//     //if data found, return the current Link
-//     return current;
-// }
+    //if list is empty
+    if (head == NULL)
+    {
+        return -1;
+    }
+
+    int index = 0;
+    //navigate through list
+    while (compare_ipv6Bis(&(current->addr->sin6_addr),&addr->sin6_addr) != 0 && (current->device != device))
+    {
+        //if it is last node
+        if (current->next == NULL)
+        {
+            return -1;
+        }
+        else
+        {
+            //go to next link
+            current = current->next;
+            index++;
+        }
+    }
+    //if data found, return the current Link
+    return index + 1;
+}
 
 //delete a link with given key
 int deleteTOutDevice (list_device_t *list,unsigned long timer)

@@ -27,3 +27,4 @@ list_device_t *init_listDevice(int sockfd,unsigned long r_timer);
 int deleteTOutDevice (list_device_t *list,unsigned long timer);
 // node_device_t *findDevice(uint8_t token, device_t device, list_device_t *list);
 struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int index, char * buf);
+int findDevice(list_device_t *list,device_t device, struct sockaddr_in6 * addr);
