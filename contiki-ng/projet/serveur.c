@@ -167,18 +167,8 @@ void *inputThread(void *empty)
                 }
             }
             
-            if (err < 0)
-            {
-                perror("Error printed by perror");
-            }
-
         }
-        // else if((strcmp(device, "temp") == 0){
-        //     if(strcmp(action, "off") == 0){
-
-        //     }
-        // }
-        
+         
         else if((strcmp(device, "list") == 0)){
             printList(list);
             printf("\n");

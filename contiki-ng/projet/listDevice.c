@@ -90,7 +90,9 @@ struct sockaddr_in6* sendToDevice(list_device_t *list, device_t device, int inde
                     perror("failed to send : ");
                     return NULL;
                 }
-                return ptr->addr;
+                struct sockaddr_in6 * mallocedNode = (struct sockaddr_in6 *) malloc(sizeof(struct sockaddr_in6));
+                memcpy(mallocedNode,ptr->addr,sizeof(struct sockaddr_in6));
+                return mallocedNode;
                 
             }
         }
@@ -112,8 +114,6 @@ void refreshDevice(list_device_t *list,struct sockaddr_in6 * addr, unsigned long
         
         if(compare_ipv6Bis(&(ptr->addr->sin6_addr),&addr->sin6_addr) == 0){
             ptr->timer = timer;
-            printf("device : %d refreshed\n",i);
-
         }
         ptr = ptr->next;
 
