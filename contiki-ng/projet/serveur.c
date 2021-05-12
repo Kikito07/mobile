@@ -128,7 +128,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
                 }
             }
         }
-        printf("hello ack\n");
         uint8_t id = pkt_get_msgid(&pkt_routine);
         delete (id, list, nAddr);
     }
@@ -175,7 +174,7 @@ void *inputThread(void *empty)
       
 
         printf("insert your command : \n");
-        fgets(string,128,stdin);
+        gets(string);
         char delim[] = " ";
         char *device = strtok(string, delim);
         char *index_c = strtok(NULL, delim);
@@ -210,6 +209,7 @@ void *inputThread(void *empty)
             }
             else if (strcmp(action, "allon") == 0)
             {
+
                 int len = lengthDevice(list_device, LAMP);
                 for (int i = 0; i < len; i++)
                 {   printf("3x normaly\n");
@@ -368,7 +368,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    list = init_list(sockfd, 3 * 1000);
+    list = init_list(sockfd, 5 * 1000);
     if (list == NULL)
     {
         printf("malloc failed");
@@ -432,7 +432,7 @@ int main()
             handlePacket(bufMain, mallocedNodeAddr);
         }
         reTransmit(list, timer());
-        // deleteTOutDevice(list_device, timer());
+        deleteTOutDevice(list_device, timer());
     }
     pthread_join(thread_id, NULL);
     printf("After Thread\n");

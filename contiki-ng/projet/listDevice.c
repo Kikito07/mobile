@@ -145,6 +145,7 @@ void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr, device_t d
             return;
         }
         node_device_t *current = head;
+        
         while(current->next != NULL){
             current = current->next;
         }
