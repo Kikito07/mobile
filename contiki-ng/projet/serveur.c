@@ -39,6 +39,19 @@ bool usedToken[128];
 size_t enc_pkt_size = 6;
 lamp_types_t post_type;
 
+void ipv6_to_str_unexpanded(const struct in6_addr *addr)
+{
+    printf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x \n",
+           (int)addr->s6_addr[0], (int)addr->s6_addr[1],
+           (int)addr->s6_addr[2], (int)addr->s6_addr[3],
+           (int)addr->s6_addr[4], (int)addr->s6_addr[5],
+           (int)addr->s6_addr[6], (int)addr->s6_addr[7],
+           (int)addr->s6_addr[8], (int)addr->s6_addr[9],
+           (int)addr->s6_addr[10], (int)addr->s6_addr[11],
+           (int)addr->s6_addr[12], (int)addr->s6_addr[13],
+           (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
+}
+
 pkt_t *composePacket(pcode_t code, uint8_t ack, char *payload)
 {
     pkt_t *new_pkt = pkt_new();
@@ -122,6 +135,8 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             {
                 printf("the detector %d is deactivated \n", i);
             }
+
+
         }
 
         else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == LAMP))
@@ -131,12 +146,41 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             int i = findDevice(list_device, dev, nAddr);
             if (post_type == PTYPE_LIGHT_ON)
             {
-                printf("lamp %d is on \n", i);
+                printf("lamp %d is ON \n", i);
             }
             else if (post_type == PTYPE_LIGHT_OFF)
             {
-                printf("lamp %d is off \n", i);
+                printf("lamp %d is OFF \n", i);
             }
+        }
+
+        else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == DETECTOR))
+        {
+            const char *payload = pkt_get_payload(&pkt_routine);
+            detector_types_t post_type = payload[0];
+            int i = findDevice(list_device, dev, nAddr);
+            if (post_type == ACTIVATE)
+            {
+                printf("detector %d is ON \n", i);
+            }
+            else if (post_type == DESACTIVATE)
+            {
+                printf("detector %d is OFF \n", i);
+            }
+        }
+
+        else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == TEMP))
+        {
+            const char *payload = pkt_get_payload(&pkt_routine);
+            uint8_t temperature = payload[0];
+            int i = findDevice(list_device, dev, nAddr);
+            printf("temperature of the temp %d is %u \n", i, temperature);
+        }
+
+        else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == ALARM))
+        {
+            int i = findDevice(list_device, dev, nAddr);
+            printf("alarm %d is deactivated \n", i);
         }
 
         uint8_t id = pkt_get_msgid(&pkt_routine);
@@ -146,14 +190,17 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
     {
         printf("I'm here\n");
         int len = lengthDevice(list_device, ALARM);
+        printf("len : %d \n", len);
         for (int i = 0; i < len; i++)
         {
             char empty[2] = "aa";
             pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
             pkt_encode(pkt, buf);
             struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
+            ipv6_to_str_unexpanded(&d_addr->sin6_addr);
             if (d_addr != NULL)
             {
+                
                 insertFirst(*pkt, list, d_addr, timer());
             }
         }
@@ -210,7 +257,7 @@ void *inputThread(void *empty)
         {
             index = atoi(index_c);
         }
-        
+
         char *value_c = strtok(NULL, delim);
         int value = 0;
         if (value_c != NULL)
@@ -258,7 +305,7 @@ void *inputThread(void *empty)
             else if (strcmp(action, "alloff") == 0)
             {
                 int len = lengthDevice(list_device, LAMP);
-                printf("len : %d\n",len);
+                printf("len : %d\n", len);
                 for (int i = 0; i < len; i++)
                 {
                     printf("3x normaly\n");
@@ -295,8 +342,6 @@ void *inputThread(void *empty)
         {
             if ((strcmp(action, "set") == 0))
             {
-                printf("pourtant je rentre ici");
-                printf(" tmep = %d \n", value);
                 char payload[2];
                 payload[0] = (uint8_t)value;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, payload);
@@ -319,7 +364,6 @@ void *inputThread(void *empty)
                     printf("send succ\n");
                     insertFirst(*pkt, list, d_addr, timer());
                 }
-                
             }
 
             else if (((strcmp(action, "getherm") == 0)))
@@ -366,9 +410,9 @@ void *inputThread(void *empty)
 
             else if (((strcmp(action, "get") == 0)))
             {
-
+                printf("heeeeeello \n");
                 detector_types_t post_type = GET;
-                pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
+                pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
                 if (d_addr != NULL)
@@ -403,18 +447,7 @@ void *inputThread(void *empty)
     }
 }
 
-void ipv6_to_str_unexpanded(const struct in6_addr *addr)
-{
-    printf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
-           (int)addr->s6_addr[0], (int)addr->s6_addr[1],
-           (int)addr->s6_addr[2], (int)addr->s6_addr[3],
-           (int)addr->s6_addr[4], (int)addr->s6_addr[5],
-           (int)addr->s6_addr[6], (int)addr->s6_addr[7],
-           (int)addr->s6_addr[8], (int)addr->s6_addr[9],
-           (int)addr->s6_addr[10], (int)addr->s6_addr[11],
-           (int)addr->s6_addr[12], (int)addr->s6_addr[13],
-           (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
-}
+
 
 int main()
 {
@@ -484,7 +517,7 @@ int main()
             {
                 printf("fail \n");
             }
-            
+
             // ipv6_to_str_unexpanded(&(nodeAddr.sin6_addr));
             // printf("\n");
             // printf("n: %d\n",n);

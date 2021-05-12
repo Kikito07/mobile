@@ -66,13 +66,13 @@ handle_packet(int sensor)
 
     if (sensor == 0)
     {
-        pkt_set_ack(&pkt, 1);
+        
         if (PKT_OK != pkt_decode(buf, &pkt))
         {
             PRINTF("packet received but encode fail");
         }
         pkt_set_device(&pkt, DETECTOR);
-        
+        pkt_set_ack(&pkt, 1);
         if (pkt_get_code(&pkt) == PCODE_POST)
         {
             const char *payload = pkt_get_payload(&pkt);
@@ -95,8 +95,9 @@ handle_packet(int sensor)
             }
         }
 
-        else if (((pkt_get_code(&pkt)) == PCODE_GET) && (activate == 1))
-        {
+        else if (((pkt_get_code(&pkt)) == PCODE_GET) )
+        {   
+            PRINTF("HOOOOO PUTAINGG \n");
             if (activate == 1)
             {
                 detector_types_t act = ACTIVATE;
@@ -109,7 +110,7 @@ handle_packet(int sensor)
             }
         }
     }
-    else if (sensor == 1)
+    else if (sensor == 1 && (activate == 1))
     {
 
         PRINTF("SENSEUR ALOO ALOOO MAX VERSTAPPEN EST SURPER NULL\n ");

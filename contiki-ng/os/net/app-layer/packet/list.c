@@ -29,7 +29,7 @@ void printList(list_t *list)
     //start from the beginning
     while (ptr != NULL)
     {
-        printf("%u\n", (ptr->pkt.msgid));
+        printf("packet with MSGID : %u\n", (ptr->pkt.msgid));
         ptr = ptr->next;
     }
     printf(" ]");
@@ -218,7 +218,7 @@ node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
         }
     }
     //found a match, update the link
-    printf("inside delete : \n");
+
     node_t *tmp = current;
     if (current == head)
     {

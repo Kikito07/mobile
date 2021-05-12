@@ -18,6 +18,20 @@ int compare_ipv6Bis(struct in6_addr *ipA, struct in6_addr *ipB)
     return 0;
 }
 
+void ipv6_to_str_unexpandedBis(const struct in6_addr *addr)
+{
+    printf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+           (int)addr->s6_addr[0], (int)addr->s6_addr[1],
+           (int)addr->s6_addr[2], (int)addr->s6_addr[3],
+           (int)addr->s6_addr[4], (int)addr->s6_addr[5],
+           (int)addr->s6_addr[6], (int)addr->s6_addr[7],
+           (int)addr->s6_addr[8], (int)addr->s6_addr[9],
+           (int)addr->s6_addr[10], (int)addr->s6_addr[11],
+           (int)addr->s6_addr[12], (int)addr->s6_addr[13],
+           (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
+}
+
+
 list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 {
     list_device_t *list = malloc(sizeof(list_device_t));
@@ -36,16 +50,20 @@ list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 void printListDevice(list_device_t *list)
 {
     node_device_t *ptr = list->head;
-    printf("\n[ ");
+    printf("[\n ");
 
     //start from the beginning
     while (ptr != NULL)
-    {
+    {   
+        // int i = findDevice(list,);
         printf("device : %u\n", (ptr->device));
+        printf("device number : %d\n",i);
+        ipv6_to_str_unexpandedBis(&(ptr->addr->sin6_addr));
+        printf("\n");
         ptr = ptr->next;
     }
 
-    printf(" ]");
+    printf(" \n ]");
 }
 
 
