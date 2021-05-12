@@ -114,6 +114,7 @@ int reTransmit(list_t *list, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
     node_t *current = list->head;
+    node_t *previous = NULL;
     //if list is empty
     if (current == NULL)
     {
@@ -128,10 +129,19 @@ int reTransmit(list_t *list, unsigned long timer)
         if ((timer - (current->timer)) > list->r_timer)
         {
 
-            printf("in timer\n");
             if (current->counter == 0)
             {
-                delete (current->pkt.msgid, list, current->addr);
+                printf("retransmission limit reached\n");
+                if (current == list->head)
+                {
+                    //change first to point to next link
+                    list->head = list->head->next;
+                }
+                else
+                {
+                    //bypass the current link
+                    previous->next = current->next;
+                }
             }
             else
             {
@@ -151,6 +161,7 @@ int reTransmit(list_t *list, unsigned long timer)
             }
             current->timer = timer;
         }
+        previous = current;
         current = current->next;
     }
     pthread_mutex_unlock(&(list->lock));
