@@ -6,8 +6,7 @@
 #include "packet.h"
 #include <pthread.h>
 
-
-list_t *init_list(int sockfd,unsigned long r_timer)
+list_t *init_list(int sockfd, unsigned long r_timer)
 {
     list_t *list = malloc(sizeof(list_t));
     if (list == NULL)
@@ -18,6 +17,7 @@ list_t *init_list(int sockfd,unsigned long r_timer)
     list->last = NULL;
     list->sockfd = sockfd;
     list->r_timer = r_timer;
+    list->counter = 5;
     pthread_mutex_init(&(list->lock), NULL);
     return list;
 }
@@ -36,7 +36,7 @@ void printList(list_t *list)
 }
 
 //insert link at the first location
-void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 *addr,unsigned long timer)
+void insertFirst(pkt_t pkt, list_t *list, struct sockaddr_in6 *addr, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
     node_t *head = list->head;
@@ -45,7 +45,7 @@ void insertFirst(pkt_t pkt, list_t *list,struct sockaddr_in6 *addr,unsigned long
 
     link->pkt = pkt;
 
-    link-> addr = addr; 
+    link->addr = addr;
 
     //point it to old first node
     link->next = head;
@@ -110,8 +110,9 @@ node_t *find(uint8_t msgid, list_t *list)
     return current;
 }
 
-int reTransmit(list_t *list,unsigned long timer)
+int reTransmit(list_t *list, unsigned long timer)
 {
+    pthread_mutex_lock(&(list->lock));
     node_t *current = list->head;
     //if list is empty
     if (current == NULL)
@@ -124,31 +125,42 @@ int reTransmit(list_t *list,unsigned long timer)
         // printf("r_timer : %lu\n",list->r_timer);
         // printf("diff : %lu\n",timer-(current -> timer));
 
-        if((timer-(current -> timer)) > list->r_timer){
-            
-            printf("in timer\n");
+        if ((timer - (current->timer)) > list->r_timer)
+        {
 
-            char buf[10];
-            pkt_t pkt = current->pkt;
-            pkt_encode(&pkt, buf);
-            int err = sendto(list->sockfd, buf, 5,
-                         MSG_CONFIRM, (const struct sockaddr *)current->addr,
-                         sizeof(struct sockaddr_in6));
-            if(err < 0){
-                perror("send error : ");  
-                return -1;
+            printf("in timer\n");
+            if (current->counter == 0)
+            {
+                delete (current->pkt.msgid, list, current->addr);
             }
-            current->timer = timer;   
+            else
+            {
+                char buf[10];
+                pkt_t pkt = current->pkt;
+                pkt_encode(&pkt, buf);
+                int err = sendto(list->sockfd, buf, 5,
+                                 MSG_CONFIRM, (const struct sockaddr *)current->addr,
+                                 sizeof(struct sockaddr_in6));
+                if (err < 0)
+                {
+                    perror("send error : ");
+                    pthread_mutex_unlock(&(list->lock));
+                    return -1;
+                }
+                (current->counter)--;
+            }
+            current->timer = timer;
         }
         current = current->next;
     }
-return 1;
+    pthread_mutex_unlock(&(list->lock));
+    return 1;
 }
 
 int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
 {
     int i = 0;
-    for(i = 0; i < 16; ++i)
+    for (i = 0; i < 16; ++i)
     {
         if (ipA->s6_addr[i] < ipB->s6_addr[i])
             return -1;
@@ -158,8 +170,7 @@ int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
     return 0;
 }
 
-
-node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
+node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
 {
 
     pthread_mutex_lock(&(list->lock));
@@ -167,7 +178,6 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
     node_t *head = list->head;
     node_t *current = head;
     node_t *previous = NULL;
-    
 
     //if list is empty
     if (head == NULL)
@@ -176,10 +186,9 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
     }
 
     //navigate through list
-    while ((current->pkt.msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr),&addr->sin6_addr) != 0)
+    while ((current->pkt.msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr), &addr->sin6_addr) != 0)
     {
-        
-        
+
         //if it is last node
         if (current->next == NULL)
         {
@@ -241,5 +250,5 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
 //     printf("============\n");
 //     delete(msgid2,msgid2,list);
 //     printList(list);
-    
+
 // }
