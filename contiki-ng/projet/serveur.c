@@ -243,6 +243,7 @@ void *inputThread(void *empty)
             else if (strcmp(action, "alloff") == 0)
             {
                 int len = lengthDevice(list_device, LAMP);
+                printf("len : %d\n",len);
                 for (int i = 0; i < len; i++)
                 {
                     printf("3x normaly\n");
@@ -252,6 +253,7 @@ void *inputThread(void *empty)
                     struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
                     if (d_addr != NULL)
                     {
+                        printf("hello insertFirst\n");
                         insertFirst(*pkt, list, d_addr, timer());
                     }
                     else
@@ -299,8 +301,10 @@ void *inputThread(void *empty)
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
                 if (d_addr != NULL)
                 {
+                    printf("send succ\n");
                     insertFirst(*pkt, list, d_addr, timer());
                 }
+                
             }
 
             else if (((strcmp(action, "getherm") == 0)))
