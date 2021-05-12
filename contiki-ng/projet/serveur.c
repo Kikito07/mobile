@@ -82,13 +82,11 @@ unsigned long timer()
 int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 {
 
-    
     // printf("code : %u\n",(pkt_get_code(&pkt_routine)));
     // printf("device : %u\n",(pkt_get_device(&pkt_routine)));
-
+    device_t dev = pkt_get_device(&pkt_routine);
     if (pkt_get_ack(&pkt_routine) == 1)
     {
-        device_t dev = pkt_get_device(&pkt_routine);
 
         if ((pkt_get_code(&pkt_routine) == PCODE_GET) && (dev == TEMP))
         {
@@ -111,25 +109,39 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
                 printf("temp of the rome %d is %u\n", i, temp);
             }
         }
-
-        else if ((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev == DETECTOR))
+        else if ((pkt_get_code(&pkt_routine) == PCODE_GET) && (dev == DETECTOR))
         {
-            printf("I'm here\n");
-            int len = lengthDevice(list_device, ALARM);
-            for (int i = 0; i < len; i++)
+            const char *payload = pkt_get_payload(&pkt_routine);
+            detector_types_t post_type = payload[0];
+            int i = findDevice(list_device, dev, nAddr);
+            if (post_type == ACTIVATE)
             {
-                char empty[] = "\0";
-                pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i+1, buf);
-                if (d_addr != NULL)
-                {
-                    insertFirst(*pkt, list, d_addr, timer());
-                }
+                printf("the detector %d is activated \n", i);
+            }
+            else if (post_type == DESACTIVATE)
+            {
+                printf("the detector %d is deactivated \n", i);
             }
         }
+
         uint8_t id = pkt_get_msgid(&pkt_routine);
         delete (id, list, nAddr);
+    }
+    else if ((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev == DETECTOR))
+    {
+        printf("I'm here\n");
+        int len = lengthDevice(list_device, ALARM);
+        for (int i = 0; i < len; i++)
+        {
+            char empty[2] = "aa";
+            pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
+            pkt_encode(pkt, buf);
+            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
+            if (d_addr != NULL)
+            {
+                insertFirst(*pkt, list, d_addr, timer());
+            }
+        }
     }
     return 0;
 }
@@ -171,7 +183,6 @@ void *inputThread(void *empty)
         memset(&servaddrToSend, 0, sizeof(servaddrToSend));
         servaddrToSend.sin6_family = AF_INET6;
         servaddrToSend.sin6_port = htons(PORT);
-      
 
         printf("insert your command : \n");
         gets(string);
@@ -212,37 +223,41 @@ void *inputThread(void *empty)
 
                 int len = lengthDevice(list_device, LAMP);
                 for (int i = 0; i < len; i++)
-                {   printf("3x normaly\n");
+                {
+                    printf("3x normaly\n");
                     post_type = PTYPE_LIGHT_ON;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                     pkt_encode(pkt, buf);
-                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i+1, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
                     if (d_addr != NULL)
                     {
                         insertFirst(*pkt, list, d_addr, timer());
                     }
-                    else{
+                    else
+                    {
                         printf("failed to insert\n");
                     }
                 }
             }
-            else if(strcmp(action, "alloff") == 0){
+            else if (strcmp(action, "alloff") == 0)
+            {
                 int len = lengthDevice(list_device, LAMP);
                 for (int i = 0; i < len; i++)
-                {   printf("3x normaly\n");
+                {
+                    printf("3x normaly\n");
                     post_type = PTYPE_LIGHT_OFF;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                     pkt_encode(pkt, buf);
-                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i+1, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
                     if (d_addr != NULL)
                     {
                         insertFirst(*pkt, list, d_addr, timer());
                     }
-                    else{
+                    else
+                    {
                         printf("failed to insert\n");
                     }
                 }
-
             }
             else if (strcmp(action, "off") == 0)
             {
@@ -265,7 +280,7 @@ void *inputThread(void *empty)
                 printf("pourtant je rentre ici");
                 printf(" tmep = %d \n", value);
                 char payload[2];
-                payload[0] = (uint8_t) value;
+                payload[0] = (uint8_t)value;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, payload);
                 pkt_encode(pkt, buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
@@ -306,7 +321,7 @@ void *inputThread(void *empty)
             if (((strcmp(action, "on") == 0)))
             {
 
-                alarm_types_t post_type = ACTIVATE;
+                detector_types_t post_type = ACTIVATE;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
@@ -319,7 +334,7 @@ void *inputThread(void *empty)
             else if (((strcmp(action, "off") == 0)))
             {
 
-                alarm_types_t post_type = DESACTIVATE;
+                detector_types_t post_type = DESACTIVATE;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
@@ -327,6 +342,31 @@ void *inputThread(void *empty)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
                 }
+            }
+
+            else if (((strcmp(action, "get") == 0)))
+            {
+
+                detector_types_t post_type = GET;
+                pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
+                if (d_addr != NULL)
+                {
+                    insertFirst(*pkt, list, d_addr, timer());
+                }
+            }
+        }
+
+        else if ((strcmp(device, "alarm") == 0))
+        {
+            char empty[2] = "aa";
+            pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
+            pkt_encode(pkt, buf);
+            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, buf);
+            if (d_addr != NULL)
+            {
+                insertFirst(*pkt, list, d_addr, timer());
             }
         }
 

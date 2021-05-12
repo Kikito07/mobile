@@ -67,12 +67,18 @@ handle_packet()
     {
         PRINTF("packet received but encode fail");
     }
+    pcode_t code = pkt_get_code(&pkt);
 
-    if (pkt_get_code(&pkt) == PCODE_ALARM)
+    if (code == PCODE_ALARM)
     {
         leds_on(LEDS_RED);
 
     }
+
+    if (code == PCODE_POST){
+        leds_off(LEDS_RED);
+    }
+    
     pkt_set_device(&pkt,ALARM);
     pkt_set_ack(&pkt, 1);
     pkt_encode(&pkt, buf);

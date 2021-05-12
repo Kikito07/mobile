@@ -71,11 +71,12 @@ handle_packet(int sensor)
         {
             PRINTF("packet received but encode fail");
         }
-
+        pkt_set_device(&pkt, DETECTOR);
+        
         if (pkt_get_code(&pkt) == PCODE_POST)
         {
             const char *payload = pkt_get_payload(&pkt);
-            alarm_types_t post_type = payload[0];
+            detector_types_t post_type = payload[0];
 
             uint8_t one = 1;
             pkt_set_ack(&pkt, one);
@@ -98,12 +99,12 @@ handle_packet(int sensor)
         {
             if (activate == 1)
             {
-                alarm_types_t act = ACTIVATE;
+                detector_types_t act = ACTIVATE;
                 pkt_set_payload(&pkt, ((const char *)&act), 2);
             }
             else
             {
-                alarm_types_t act = DESACTIVATE;
+                detector_types_t act = DESACTIVATE;
                 pkt_set_payload(&pkt, (const char *)&act, 2);
             }
         }
@@ -119,7 +120,7 @@ handle_packet(int sensor)
 
         pkt_set_device(&pkt, DETECTOR);
 
-        pkt_set_ack(&pkt, 1);
+        pkt_set_ack(&pkt, 0);
     }
 
     pkt_encode(&pkt, buf);

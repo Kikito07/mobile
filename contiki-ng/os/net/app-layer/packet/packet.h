@@ -51,7 +51,9 @@ typedef enum {
 typedef enum {
   ACTIVATE = 1,
   DESACTIVATE = 2,
-} alarm_types_t;
+  GET = 3,
+} detector_types_t;
+
 
 /* Taille maximale permise pour le payload */
 #define MAX_PAYLOAD_SIZE 2
