@@ -120,6 +120,7 @@ int reTransmit(list_t *list, unsigned long timer)
     //if list is empty
     if (current == NULL)
     {
+        pthread_mutex_unlock(&(list->lock));
         return -1;
     }
     //navigate through list
