@@ -188,13 +188,14 @@ void *inputThread(void *empty)
         gets(string);
         char delim[] = " ";
         char *device = strtok(string, delim);
+        char *action = strtok(NULL, delim);
         char *index_c = strtok(NULL, delim);
         int index = 0;
         if (index_c != NULL)
         {
             index = atoi(index_c);
         }
-        char *action = strtok(NULL, delim);
+        
         char *value_c = strtok(NULL, delim);
         int value = 0;
         if (value_c != NULL)

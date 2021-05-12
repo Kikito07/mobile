@@ -10,6 +10,7 @@ typedef struct node {
   struct node *next;
   unsigned long timer;
   struct sockaddr_in6* addr;
+  int counter;
 }node_t;
 
 typedef struct List // list structure
