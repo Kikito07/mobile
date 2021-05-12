@@ -55,8 +55,8 @@ void printListDevice(list_device_t *list)
     //start from the beginning
     while (ptr != NULL)
     {   
-        // int i = findDevice(list,);
-        printf("device : %u\n", (ptr->device));
+        int i = findDevice(list, ptr->device,ptr->addr);
+        printf("device type : %u\n", (ptr->device));
         printf("device number : %d\n",i);
         ipv6_to_str_unexpandedBis(&(ptr->addr->sin6_addr));
         printf("\n");
