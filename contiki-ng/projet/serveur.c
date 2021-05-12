@@ -83,8 +83,8 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 {
 
     
-    printf("code : %u\n",(pkt_get_code(&pkt_routine)));
-    printf("device : %u\n",(pkt_get_device(&pkt_routine)));
+    // printf("code : %u\n",(pkt_get_code(&pkt_routine)));
+    // printf("device : %u\n",(pkt_get_device(&pkt_routine)));
 
     if (pkt_get_ack(&pkt_routine) == 1)
     {
@@ -132,6 +132,7 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
         uint8_t id = pkt_get_msgid(&pkt_routine);
         delete (id, list, nAddr);
     }
+    return 0;
 }
 
 int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
@@ -142,6 +143,7 @@ int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
         device_t device = pkt_get_device(&pktHello);
         insertLastDevice(list_device, nAddr, device, timer());
     }
+    return 0;
 }
 
 int handlePacket(char *b, struct sockaddr_in6 *nAddr)
@@ -159,6 +161,7 @@ int handlePacket(char *b, struct sockaddr_in6 *nAddr)
     free(nAddr);
     receivHello(pktHandle, mallocedNodeAddr1);
     ackRoutine(pktHandle, mallocedNodeAddr2);
+    return 0;
 }
 void *inputThread(void *empty)
 {
@@ -169,11 +172,10 @@ void *inputThread(void *empty)
         memset(&servaddrToSend, 0, sizeof(servaddrToSend));
         servaddrToSend.sin6_family = AF_INET6;
         servaddrToSend.sin6_port = htons(PORT);
-        int err;
+      
 
         printf("insert your command : \n");
-        gets(string);
-        int init_size = strlen(string);
+        fgets(string,128,stdin);
         char delim[] = " ";
         char *device = strtok(string, delim);
         char *index_c = strtok(NULL, delim);
@@ -194,7 +196,6 @@ void *inputThread(void *empty)
         printf("action : %s\n", action);
         if (strcmp(device, "lamp") == 0)
         {
-            pcode_t type = PCODE_POST;
 
             if (strcmp(action, "on") == 0)
             {
@@ -263,7 +264,9 @@ void *inputThread(void *empty)
             {
                 printf("pourtant je rentre ici");
                 printf(" tmep = %d \n", value);
-                pkt_t *pkt = composePacket(PCODE_POST, 0, (uint8_t *)&value);
+                char payload[2];
+                payload[0] = (uint8_t) value;
+                pkt_t *pkt = composePacket(PCODE_POST, 0, payload);
                 pkt_encode(pkt, buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
                 if (d_addr != NULL)
