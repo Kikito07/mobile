@@ -95,7 +95,7 @@ handle_packet(int sensor)
             }
         }
 
-        else if ((pkt_get_code(&pkt)) == PCODE_GET)
+        else if (((pkt_get_code(&pkt)) == PCODE_GET) && (activate == 1))
         {
             if (activate == 1)
             {

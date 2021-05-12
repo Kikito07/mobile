@@ -92,7 +92,7 @@ handle_packet()
 
         if (post_type == PTYPE_SENS ){
             int ra = abs(rand());
-            uint16_t randi= ra%10 + temp;
+            uint16_t randi= ra%5 + temp;
             PRINTF("PTYPE_TERM\n");
             tran[0] = post_type;
             tran[1] = randi;
