@@ -197,7 +197,7 @@ int findDevice(list_device_t *list,device_t device, struct sockaddr_in6 * addr)
 
     int index = 0;
     //navigate through list
-    while (compare_ipv6Bis(&(current->addr->sin6_addr),&addr->sin6_addr) != 0 && (current->device != device))
+    while (compare_ipv6Bis(&(current->addr->sin6_addr),&addr->sin6_addr) != 0)
     {
         //if it is last node
         if (current->next == NULL)
@@ -206,9 +206,12 @@ int findDevice(list_device_t *list,device_t device, struct sockaddr_in6 * addr)
         }
         else
         {
+            if(current->device == device){
+                index++;
+            }
             //go to next link
             current = current->next;
-            index++;
+            
         }
     }
     //if data found, return the current Link
