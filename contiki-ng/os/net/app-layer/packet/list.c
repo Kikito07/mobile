@@ -122,7 +122,6 @@ int reTransmit(list_t *list,unsigned long timer)
     while (current != NULL)
     {
         // printf("r_timer : %lu\n",list->r_timer);
-
         // printf("diff : %lu\n",timer-(current -> timer));
 
         if((timer-(current -> timer)) > list->r_timer){
@@ -163,6 +162,8 @@ int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
 node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
 {
 
+    pthread_mutex_lock(&(list->lock));
+
     node_t *head = list->head;
     node_t *current = head;
     node_t *previous = NULL;
@@ -177,12 +178,13 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
     //navigate through list
     while ((current->pkt.msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr),&addr->sin6_addr) != 0)
     {
-        printf("inside delete : \n");
+        
         
         //if it is last node
         if (current->next == NULL)
         {
             return NULL;
+            pthread_mutex_unlock(&(list->lock));
         }
         else
         {
@@ -193,6 +195,7 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
         }
     }
     //found a match, update the link
+    printf("inside delete : \n");
     node_t *tmp = current;
     if (current == head)
     {
@@ -206,6 +209,7 @@ node_t *delete (uint8_t msgid, list_t *list,struct sockaddr_in6 *addr)
     }
     free(tmp->addr);
     free(tmp);
+    pthread_mutex_unlock(&(list->lock));
     return NULL;
 }
 
