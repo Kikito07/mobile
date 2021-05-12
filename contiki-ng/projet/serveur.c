@@ -124,6 +124,21 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             }
         }
 
+        else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == LAMP))
+        {
+            const char *payload = pkt_get_payload(&pkt_routine);
+            detector_types_t post_type = payload[0];
+            int i = findDevice(list_device, dev, nAddr);
+            if (post_type == PTYPE_LIGHT_ON)
+            {
+                printf("lamp %d is on \n", i);
+            }
+            else if (post_type == PTYPE_LIGHT_OFF)
+            {
+                printf("lamp %d is off \n", i);
+            }
+        }
+
         uint8_t id = pkt_get_msgid(&pkt_routine);
         delete (id, list, nAddr);
     }
