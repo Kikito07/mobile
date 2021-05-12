@@ -73,6 +73,7 @@ handle_packet()
         leds_on(LEDS_RED);
 
     }
+    pkt_set_device(&pkt,ALARM);
     pkt_set_ack(&pkt, 1);
     pkt_encode(&pkt, buf);
     uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);

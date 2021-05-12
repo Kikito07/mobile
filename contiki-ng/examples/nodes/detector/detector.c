@@ -111,7 +111,7 @@ handle_packet(int sensor)
     else if (sensor == 1)
     {
 
-        PRINTF("SENSEUR ALOO ALOOO MAX VERSTAPPEN EST SURPER NULL");
+        PRINTF("SENSEUR ALOO ALOOO MAX VERSTAPPEN EST SURPER NULL\n ");
 
         pkt_set_code(&pkt, PCODE_ALARM);
 
@@ -119,7 +119,7 @@ handle_packet(int sensor)
 
         pkt_set_device(&pkt, DETECTOR);
 
-        pkt_set_ack(&pkt, 0);
+        pkt_set_ack(&pkt, 1);
     }
 
     pkt_encode(&pkt, buf);
