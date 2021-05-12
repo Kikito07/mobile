@@ -17,7 +17,7 @@ list_t *init_list(int sockfd, unsigned long r_timer)
     list->last = NULL;
     list->sockfd = sockfd;
     list->r_timer = r_timer;
-    list->counter = 5;
+
     pthread_mutex_init(&(list->lock), NULL);
     return list;
 }
@@ -51,6 +51,8 @@ void insertFirst(pkt_t pkt, list_t *list, struct sockaddr_in6 *addr, unsigned lo
     link->next = head;
 
     link->timer = timer;
+
+    link->counter = 5;
 
     //point first to new first node
     list->head = link;
