@@ -6,6 +6,9 @@
 #include "packet.h"
 #include <pthread.h>
 
+
+//List that stores the packet that are already send waiting for a ACK
+
 list_t *init_list(int sockfd, unsigned long r_timer)
 {
     list_t *list = malloc(sizeof(list_t));

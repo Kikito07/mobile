@@ -158,6 +158,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
+    uip_udp_packet_send(server_conn, buf_hello, pkt_size);
     etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
     while (1)
     { 

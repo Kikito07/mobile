@@ -4,8 +4,8 @@
 #include <string.h>
 #include <sys/types.h>
 
-/* Extra #includes */
-/* Your code will be inserted here */
+//Implementation of the packet
+
 pkt_t *pkt_new() {
   pkt_t *pkt = (pkt_t *) malloc(sizeof(pkt_t));
   return pkt;

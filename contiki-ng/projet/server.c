@@ -52,6 +52,7 @@ void ipv6_to_str_unexpanded(const struct in6_addr *addr)
            (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
 }
 
+//function used to composed Packets
 pkt_t *composePacket(pcode_t code, uint8_t ack, char *payload)
 {
     pkt_t *new_pkt = pkt_new();
@@ -69,29 +70,13 @@ pkt_t *composePacket(pcode_t code, uint8_t ack, char *payload)
     return new_pkt;
 }
 
-void printBits(size_t const size, void const *const ptr)
-{
-    unsigned char *b = (unsigned char *)ptr;
-    unsigned char byte;
-    int i, j;
-
-    for (i = 0; i < size; i++)
-    {
-        for (j = 7; j >= 0; j--)
-        {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-        printf("\n");
-    }
-    puts("");
-}
 
 unsigned long timer()
 {
     return clock();
 }
 
+//routine implementing the logic when receiving a packet
 int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 {
     device_t dev = pkt_get_device(&pkt_routine);
@@ -116,7 +101,7 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             }
             if (post_type == PTYPE_THERM)
             {
-                printf("temp of the rome %d is %u\n", i, temp);
+                printf("room temperature %d is %u\n", i, temp);
             }
         }
         else if ((pkt_get_code(&pkt_routine) == PCODE_GET) && (dev == DETECTOR))
@@ -203,6 +188,8 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
     return 0;
 }
 
+
+//function used to handle connection/disconection and refresh of devices
 int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
 {
 
@@ -216,7 +203,7 @@ int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
 
 int handlePacket(char *b, struct sockaddr_in6 *nAddr)
 {
-
+    
     pkt_t pktHandle;
     if (PKT_OK != pkt_decode(b, &pktHandle))
     {
@@ -231,6 +218,8 @@ int handlePacket(char *b, struct sockaddr_in6 *nAddr)
     ackRoutine(pktHandle, mallocedNodeAddr2);
     return 0;
 }
+
+//Thread that reads the user input in stdin
 void *inputThread(void *empty)
 {
     char string[256];
@@ -322,7 +311,6 @@ void *inputThread(void *empty)
                 post_type = PTYPE_LIGHT_OFF;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
-                // printBits(5,buf);
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, index, buf);
                 if (d_addr != NULL)
                 {
@@ -438,7 +426,7 @@ void *inputThread(void *empty)
 }
 
 
-
+//udp server
 int main()
 {
     for (int i = 0; i < 128; i++)
@@ -483,15 +471,13 @@ int main()
     fds[0].events = POLLIN;
 
     pthread_t thread_id;
-    printf("Before Thread\n");
     pthread_create(&thread_id, NULL, inputThread, NULL);
 
     int n, len, rc;
     len = sizeof(nodeAddr);
     while (true)
     {
-        // printf("timer : %lu\n",timer());
-
+      
         rc = poll(fds, 1, 50);
         if (rc == -1)
         {
@@ -502,15 +488,12 @@ int main()
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
                          MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
-            //this is sketchy
+            
             if (n < 0)
             {
                 printf("fail \n");
             }
 
-            // ipv6_to_str_unexpanded(&(nodeAddr.sin6_addr));
-            // printf("\n");
-            // printf("n: %d\n",n);
             struct sockaddr_in6 *mallocedNodeAddr = (struct sockaddr_in6 *)malloc(sizeof(struct sockaddr_in6));
             memcpy(mallocedNodeAddr, &nodeAddr, sizeof(nodeAddr));
             handlePacket(bufMain, mallocedNodeAddr);
@@ -519,7 +502,5 @@ int main()
         deleteTOutDevice(list_device, timer());
     }
     pthread_join(thread_id, NULL);
-    printf("After Thread\n");
-
     return 0;
 }
