@@ -295,18 +295,3 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
     }
 return 1;
 }
-
-// void main()
-// {
-//     list_device_t *list = init_listDevice(20);
-//     device_t device1 = LAMP;
-//     device_t device2 = TEMP;
-//     device_t device3 = SERV;
-//     uint8_t token = 1;
-//     struct sockaddr_in6 addr;
-//     insertLastDevice(list,&addr,token, device1, 10);
-//     insertLastDevice(list,&addr,token, device2, 0);
-//     insertLastDevice(list,&addr,token, device3, 10);
-//     // deleteTOutDevice(list, 25);
-//     printListDevice(list);
-// }

@@ -94,9 +94,6 @@ unsigned long timer()
 
 int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 {
-
-    // printf("code : %u\n",(pkt_get_code(&pkt_routine)));
-    // printf("device : %u\n",(pkt_get_device(&pkt_routine)));
     device_t dev = pkt_get_device(&pkt_routine);
     if (pkt_get_ack(&pkt_routine) == 1)
     {
@@ -189,7 +186,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
     else if ((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev == DETECTOR))
     {
         int len = lengthDevice(list_device, ALARM);
-        printf("len : %d \n", len);
         for (int i = 0; i < len; i++)
         {
             char empty[2] = "aa";
@@ -287,7 +283,6 @@ void *inputThread(void *empty)
                 int len = lengthDevice(list_device, LAMP);
                 for (int i = 0; i < len; i++)
                 {
-                    printf("3x normaly\n");
                     post_type = PTYPE_LIGHT_ON;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                     pkt_encode(pkt, buf);
@@ -305,17 +300,14 @@ void *inputThread(void *empty)
             else if (strcmp(action, "alloff") == 0)
             {
                 int len = lengthDevice(list_device, LAMP);
-                printf("len : %d\n", len);
                 for (int i = 0; i < len; i++)
                 {
-                    printf("3x normaly\n");
                     post_type = PTYPE_LIGHT_OFF;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
                     pkt_encode(pkt, buf);
                     struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
                     if (d_addr != NULL)
                     {
-                        printf("hello insertFirst\n");
                         insertFirst(*pkt, list, d_addr, timer());
                     }
                     else
@@ -361,7 +353,6 @@ void *inputThread(void *empty)
                 struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
                 if (d_addr != NULL)
                 {
-                    printf("send succ\n");
                     insertFirst(*pkt, list, d_addr, timer());
                 }
             }

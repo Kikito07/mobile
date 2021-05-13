@@ -126,14 +126,15 @@ int reTransmit(list_t *list, unsigned long timer)
     //navigate through list
     while (current != NULL)
     {
-        
+
         if ((timer - (current->timer)) > list->r_timer)
         {
-
+            printf("packet with MSGID : %u retransmitted\n", (current->pkt.msgid));
 
             if (current->counter == 0)
             {
-                printf("retransmission limit reached\n");
+                printf("retransmission limit reached for packet with MSGID %u\n",(current->pkt.msgid));
+
                 if (current == list->head)
                 {
                     //change first to point to next link
@@ -234,34 +235,3 @@ node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
     pthread_mutex_unlock(&(list->lock));
     return NULL;
 }
-
-// void main()
-// {
-//     list_t *list = init_list();
-//     pkt_t pkt1;
-//     pkt_t pkt2;
-//     uint16_t len = 2;
-//     char message1[] = "a";
-//     char message2[] = "b";
-//     uint8_t msgid1 = 1;
-//     uint8_t msgid2 = 2;
-//     pkt_set_payload(&pkt1, (const char *)(&message1), 2);
-//     pkt_set_payload(&pkt2, (const char *)(&message2), 2);
-//     pkt_set_msgid(&pkt1,msgid1);
-//     pkt_set_msgid(&pkt2,msgid2);
-
-//     pkt_set_token(&pkt1,msgid1);
-
-//     pkt_set_token(&pkt2,msgid2);
-//     struct sockaddr_in6 addr;
-//     insertFirst(pkt1, list,addr);
-//     insertFirst(pkt2, list,addr);
-//     printList(list);
-//     delete(msgid1,msgid1,list);
-//     printf("============\n");
-//     printList(list);
-//     printf("============\n");
-//     delete(msgid2,msgid2,list);
-//     printList(list);
-
-// }

@@ -71,9 +71,8 @@ handle_packet()
     {
 
         const char *payload = pkt_get_payload(&pkt);
-        PRINTF("msgid : %u\n",pkt_get_msgid(&pkt));
         lamp_types_t post_type = payload[0];
-        printf("post_type : %u\n",post_type);
+    
         if (post_type == PTYPE_LIGHT_ON)
         {
             leds_on(LEDS_RED);
@@ -84,6 +83,9 @@ handle_packet()
         if (post_type == PTYPE_LIGHT_OFF)
         {
             leds_off(LEDS_RED);
+            uint8_t one = 1;
+            pkt_set_ack(&pkt,one);
+            pkt_set_device(&pkt,device);
         }
     }
     pkt_set_ack(&pkt, 1);
