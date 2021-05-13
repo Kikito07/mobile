@@ -23,12 +23,12 @@
 
 #define SERVER_REPLY 1
 #define SERVER_RPL_ROOT 0
+/*---------------------------------------------------------------------------*/
+// GLOBAL VARIABLE
 
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
 static uint16_t len;
-static struct uip_udp_conn *server_conn;
-static char buf[MAX_PAYLOAD_LEN];
 static char buf_hello[MAX_PAYLOAD_LEN];
 static uint16_t len;
 static struct etimer timer;

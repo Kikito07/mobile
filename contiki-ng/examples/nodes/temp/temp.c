@@ -16,7 +16,8 @@
 #else
 #include "net/routing/rpl-lite/rpl-dag-root.h"
 #endif
-
+#define SERVER_REPLY 1
+#define SERVER_RPL_ROOT 0
 #define MAX_PAYLOAD_LEN 120
 /*---------------------------------------------------------------------------*/
 // GLOBAL VARIABLE
@@ -31,12 +32,7 @@ static size_t pkt_size = 5;
 static device_t device = TEMP;
 static uint8_t msgid = 0;
 static pcode_t hello = PCODE_HELLO;
-#define MAX_PAYLOAD_LEN 120
-static struct uip_udp_conn *server_conn;
-static char buf[MAX_PAYLOAD_LEN];
 static uint16_t len;
-#define SERVER_REPLY 1
-#define SERVER_RPL_ROOT 0
 uint16_t temp = 25;
 
 /*---------------------------------------------------------------------------*/
