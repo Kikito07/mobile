@@ -257,8 +257,8 @@ int findDevice(list_device_t *list, device_t device, struct sockaddr_in6 *addr)
         //if it is last node
         if (current->next == NULL)
         {
-            return -1;
             pthread_mutex_unlock(&(list->lock));
+            return -1;
         }
         else
         {
