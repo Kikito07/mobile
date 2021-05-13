@@ -270,6 +270,7 @@ void *inputThread(void *empty)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
                 }
+                
             }
             else if (strcmp(action, "allon") == 0)
             {
@@ -322,6 +323,9 @@ void *inputThread(void *empty)
                     insertFirst(*pkt, list, d_addr, timer());
                 }
             }
+            else{
+                printf("Wrong command, retry \n");
+            }
         }
         else if ((strcmp(device, "thermostat") == 0))
         {
@@ -360,6 +364,9 @@ void *inputThread(void *empty)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
                 }
+            }
+            else{
+                printf("Wrong command, retry \n");
             }
         }
 
@@ -401,19 +408,25 @@ void *inputThread(void *empty)
                 if (d_addr != NULL)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
-                }
+            }
+                            }
+            else{
+            printf("Wrong command, retry \n");
             }
         }
 
-        else if ((strcmp(device, "alarm") == 0))
+        else if ((strcmp(device, "alarm") == 0) && (strcmp(action, "off")))
         {
-            char empty[2] = "aa";
+            char empty[2] = "a";
             pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
             pkt_encode(pkt, buf);
             struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, buf);
             if (d_addr != NULL)
             {
                 insertFirst(*pkt, list, d_addr, timer());
+            }
+            else{
+            printf("Wrong command, retry \n");
             }
         }
 
