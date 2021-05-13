@@ -21,27 +21,12 @@
 
 #define MAX_PAYLOAD_LEN 120
 
+#define SERVER_REPLY 1
+#define SERVER_RPL_ROOT 0
+
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
 static uint16_t len;
-
-#define SERVER_REPLY 1
-
-/* Should we act as RPL root? */
-#define SERVER_RPL_ROOT 0
-
-// static uip_ipaddr_t ipServAddr;
-
-
-/*---------------------------------------------------------------------------*/
-
-PROCESS(udp_server_process, "UDP server process");
-PROCESS(boot_process, "boot process");
-
-AUTOSTART_PROCESSES(&udp_server_process);
-
-/*---------------------------------------------------------------------------*/
-
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
 static char buf_hello[MAX_PAYLOAD_LEN];
@@ -49,12 +34,20 @@ static uint16_t len;
 static struct etimer timer;
 static uip_ipaddr_t ipaddr;
 static size_t pkt_size = 5;
-
 static pkt_t pkt;
-
 static device_t device = LAMP;
 static uint8_t msgid = 0;
 static pcode_t hello = PCODE_HELLO;
+
+/*---------------------------------------------------------------------------*/
+
+PROCESS(udp_server_process, "UDP server process");
+
+AUTOSTART_PROCESSES(&udp_server_process);
+
+/*---------------------------------------------------------------------------*/
+
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -67,12 +60,15 @@ handle_packet()
     {
         PRINTF("packet received but encode fail");
     }
+
+    // verify if the packet is a post
     if (pkt_get_code(&pkt) == PCODE_POST)
     {
 
         const char *payload = pkt_get_payload(&pkt);
         lamp_types_t post_type = payload[0];
-    
+
+        // Turn the light on if the packet received is a lighton packet
         if (post_type == PTYPE_LIGHT_ON)
         {
             leds_on(LEDS_RED);
@@ -80,6 +76,8 @@ handle_packet()
             pkt_set_ack(&pkt,one);
             pkt_set_device(&pkt,device);
         }
+
+        // Turn the light off if the packet received is a lightoff packet
         if (post_type == PTYPE_LIGHT_OFF)
         {
             leds_off(LEDS_RED);
@@ -93,6 +91,7 @@ handle_packet()
     uip_udp_packet_send(server_conn, buf, len);
 }
 
+/*---------------------------------------------------------------------------*/
 static void
 tcpip_handler(void)
 {
@@ -110,41 +109,15 @@ tcpip_handler(void)
     return;
 }
 
-
 /*---------------------------------------------------------------------------*/
 
-PROCESS_THREAD(boot_process, ev, data){
-
-    PROCESS_BEGIN();
-    etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
-    while (1)
-    {   PRINTF("hello boy\n");
-        PROCESS_YIELD();
-        if (ev == PROCESS_EVENT_TIMER)
-        {
-            PRINTF("HELLO\n");
-            etimer_reset(&timer);
-            
-        }
-    }
-    PROCESS_END();
-
-
-}
-
-
-
+// Main process of the device
 
 PROCESS_THREAD(udp_server_process, ev, data)
 {
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
     
-    // leds_toogle(LEDS_BLUE);
-
-#if SERVER_RPL_ROOT
-    create_dag();
-#endif
 
     uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
     server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
@@ -158,6 +131,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
+    // Send the first hello packet to connect the device to the server. 
     uip_udp_packet_send(server_conn, buf_hello, pkt_size);
     etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
     while (1)
@@ -165,12 +139,14 @@ PROCESS_THREAD(udp_server_process, ev, data)
         PROCESS_YIELD();
         if (ev == PROCESS_EVENT_TIMER)
         {  
+            // Send a hello packet to keep the connection alive.
             uip_udp_packet_send(server_conn, buf_hello, pkt_size);
             etimer_reset(&timer);
             
         }
         else if(ev == tcpip_event){
             PRINTF("tcp ip event\n");
+            // If the device receive a packet tcpip_handler manage the packet.
             tcpip_handler();
         }
     }

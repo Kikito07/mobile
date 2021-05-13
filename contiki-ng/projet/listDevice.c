@@ -270,7 +270,7 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
     {
         
         if((timer-(current -> timer)) > list->r_timer){
-            printf("lost connection with");
+            printf("lost connection with ");
             printDevice(current->device);
             printf("\n");
             node_device_t *tmp = current;
