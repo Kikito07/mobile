@@ -1,0 +1,2 @@
+make: server.c ../os/net/app-layer/packet/packet.c ../os/net/app-layer/packet/list.c listDevice.c
+	gcc ../os/net/app-layer/packet/packet.c ../os/net/app-layer/packet/list.c listDevice.c server.c -o server -g  -lpthread
