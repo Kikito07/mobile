@@ -1,3 +1,19 @@
+
+/*
+#########################################################################################################
+#--Autor--		* Nikita Tyunyaev                                                                       #
+#               * Arnaud Lahousse                                                                       #
+#               * Anicet SIEWE KOUETA 																    #
+#																		                                #
+#																										#
+#--Descroption--																						#
+#																										#
+#	This program allows to Control and interact with the different mote of the network                  #
+#   (Alarm, detector, Lamp and temp)                                                                    #
+#   All communications between motes pass through the server, and the forward server to                 #
+#   the corresponding nodes.																            #
+#########################################################################################################
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,6 +55,10 @@ bool usedToken[128];
 size_t enc_pkt_size = 6;
 lamp_types_t post_type;
 
+/*
+@param:addr 
+function "ipv6_to_str_unexpanded": displays the addresses of motes
+*/
 void ipv6_to_str_unexpanded(const struct in6_addr *addr)
 {
     printf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x \n",
@@ -52,7 +72,12 @@ void ipv6_to_str_unexpanded(const struct in6_addr *addr)
            (int)addr->s6_addr[14], (int)addr->s6_addr[15]);
 }
 
-//function used to composed Packets
+/*
+@param:code 
+@param:ack 
+@param:payload 
+function "composePacket": used to composed Packets
+*/
 pkt_t *composePacket(pcode_t code, uint8_t ack, char *payload)
 {
     pkt_t *new_pkt = pkt_new();
@@ -76,7 +101,11 @@ unsigned long timer()
     return clock();
 }
 
-//routine implementing the logic when receiving a packet
+/*
+@param:pkt_routine 
+@param:nAddr 
+function "ackRoutine": routine implementing the logic when receiving a packet
+*/
 int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 {
     device_t dev = pkt_get_device(&pkt_routine);
@@ -193,8 +222,11 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
     return 0;
 }
 
-
-//function used to handle connection/disconection and refresh of devices
+/*
+@param:pktHello 
+@param:nAddr 
+function "receivHello": function used to handle connection/disconection and refresh of devices
+*/
 int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
 {
 
@@ -224,7 +256,10 @@ int handlePacket(char *b, struct sockaddr_in6 *nAddr)
     return 0;
 }
 
-//Thread that reads the user input in stdin
+/*
+@param:empty 
+function "inputThread": Thread that reads the user input in stdin
+*/
 void *inputThread(void *empty)
 {
     char string[256];
@@ -447,7 +482,7 @@ void *inputThread(void *empty)
     }
 }
 
-
+// ################################################# Main #############################################################
 //udp server
 int main()
 {
