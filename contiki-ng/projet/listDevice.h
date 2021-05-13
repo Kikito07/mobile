@@ -2,6 +2,7 @@
 #include "stdbool.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <pthread.h>
 
 typedef struct nodeDevice {
   struct nodeDevice *next;
@@ -17,7 +18,7 @@ typedef struct listDevice // list structure
   int sockfd;
   int r_timer;
   size_t enc_pkt_size;
-
+  pthread_mutex_t lock;
 } list_device_t;
 
 int lengthDevice(list_device_t *list,device_t device);
