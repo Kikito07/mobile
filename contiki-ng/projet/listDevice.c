@@ -246,8 +246,9 @@ int findDevice(list_device_t *list, device_t device, struct sockaddr_in6 *addr)
     //if list is empty
     if (head == NULL)
     {
-        return -1;
         pthread_mutex_unlock(&(list->lock));
+        return -1;
+        
     }
 
     int index = 0;
