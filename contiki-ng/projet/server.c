@@ -318,7 +318,7 @@ void *inputThread(void *empty)
                 }
             }
         }
-        else if ((strcmp(device, "temp") == 0))
+        else if ((strcmp(device, "thermostat") == 0))
         {
             if ((strcmp(action, "set") == 0))
             {
