@@ -69,7 +69,6 @@ list_device_t *init_listDevice(int sockfd, unsigned long r_timer)
 
 void printListDevice(list_device_t *list)
 {
-    pthread_mutex_lock(&(list->lock));
     node_device_t *ptr = list->head;
     printf("[\n");
 
@@ -86,7 +85,6 @@ void printListDevice(list_device_t *list)
     }
 
     printf(" \n ]");
-    pthread_mutex_unlock(&(list->lock));
 }
 
 int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
