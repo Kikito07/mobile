@@ -143,11 +143,11 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             int i = findDevice(list_device, dev, nAddr);
             if (post_type == ACTIVATE)
             {
-                printf("detector %d is ON \n", i);
+                printf("detector %d is activated\n", i);
             }
             else if (post_type == DESACTIVATE)
             {
-                printf("detector %d is OFF \n", i);
+                printf("detector %d is deactivated \n", i);
             }
         }
 
@@ -159,10 +159,16 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             printf("temperature of the temp %d is %u \n", i, temperature);
         }
 
+        else if ((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev == ALARM))
+        {
+            int i = findDevice(list_device, dev, nAddr);
+            printf("alarm %d triggered\n", i);
+        }
+
         else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == ALARM))
         {
             int i = findDevice(list_device, dev, nAddr);
-            printf("alarm %d is deactivated \n", i);
+            printf("alarm %d is OFF \n", i);
         }
 
         uint8_t id = pkt_get_msgid(&pkt_routine);
@@ -177,7 +183,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
             pkt_encode(pkt, buf);
             struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
-            ipv6_to_str_unexpanded(&d_addr->sin6_addr);
             if (d_addr != NULL)
             {
                 
@@ -421,6 +426,10 @@ void *inputThread(void *empty)
         {
             printListDevice(list_device);
             printf("\n");
+        }
+
+        else{
+            printf("Wrong command, retry \n");
         }
     }
 }
