@@ -415,7 +415,7 @@ void *inputThread(void *empty)
             }
         }
 
-        else if ((strcmp(device, "alarm") == 0) && (strcmp(action, "off")))
+        else if ((strcmp(device, "alarm") == 0) && (strcmp(action, "off") == 0))
         {
             char empty[2] = "a";
             pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
