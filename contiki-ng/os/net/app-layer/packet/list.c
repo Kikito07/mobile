@@ -126,11 +126,10 @@ int reTransmit(list_t *list, unsigned long timer)
     //navigate through list
     while (current != NULL)
     {
-        // printf("r_timer : %lu\n",list->r_timer);
-        // printf("diff : %lu\n",timer-(current -> timer));
-
+        
         if ((timer - (current->timer)) > list->r_timer)
         {
+
 
             if (current->counter == 0)
             {

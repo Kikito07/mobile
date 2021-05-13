@@ -18,6 +18,21 @@ int compare_ipv6Bis(struct in6_addr *ipA, struct in6_addr *ipB)
     return 0;
 }
 
+void printDevice(device_t device){
+    if(device == LAMP){
+        printf("lamp ");
+    }
+    else if(device == ALARM){
+        printf("alarm ");
+    }
+    else if(device == DETECTOR){
+        printf("detector ");
+    }
+    else if(device == TEMP){
+        printf("thermostat ");
+    }
+}
+
 void ipv6_to_str_unexpandedBis(const struct in6_addr *addr)
 {
     printf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
@@ -50,14 +65,15 @@ list_device_t *init_listDevice(int sockfd,unsigned long r_timer)
 void printListDevice(list_device_t *list)
 {
     node_device_t *ptr = list->head;
-    printf("[\n ");
+    printf("[\n");
 
     //start from the beginning
     while (ptr != NULL)
     {   
         int i = findDevice(list, ptr->device,ptr->addr);
-        printf("device type : %u\n", (ptr->device));
-        printf("device number : %d\n",i);
+
+        printDevice(ptr->device);
+        printf(": %d\n at address :",i);
         ipv6_to_str_unexpandedBis(&(ptr->addr->sin6_addr));
         printf("\n");
         ptr = ptr->next;
@@ -143,7 +159,9 @@ void insertLastDevice(list_device_t *list,struct sockaddr_in6 * addr, device_t d
 
 
     if(1 == isNotInList(list,addr)){
-        printf("hello insert\n");
+        printf("device ");
+        printDevice(device);
+        printf("connected\n");
         node_device_t *head = list->head;
         //create a link
         node_device_t *link = (node_device_t *)malloc(sizeof(node_device_t));
@@ -250,11 +268,11 @@ int deleteTOutDevice (list_device_t *list,unsigned long timer)
     //navigate through list
     while (current != NULL)
     {
-        // printf("timer diff : %d\n", (timer - (current -> timer)));
-        // printf("r_timer = %d \n", list->r_timer);
-        // printf("device = %u\n",current->device);
+        
         if((timer-(current -> timer)) > list->r_timer){
-            printf("lost connection with device\n");
+            printf("lost connection with");
+            printDevice(current->device);
+            printf("\n");
             node_device_t *tmp = current;
             if (current == list->head)
             {

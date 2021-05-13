@@ -188,7 +188,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
     }
     else if ((pkt_get_code(&pkt_routine) == PCODE_ALARM) && (dev == DETECTOR))
     {
-        printf("I'm here\n");
         int len = lengthDevice(list_device, ALARM);
         printf("len : %d \n", len);
         for (int i = 0; i < len; i++)
@@ -240,13 +239,14 @@ void *inputThread(void *empty)
 {
     char string[256];
 
+    printf("insert your command : \n");
     while (true)
     {
         memset(&servaddrToSend, 0, sizeof(servaddrToSend));
         servaddrToSend.sin6_family = AF_INET6;
         servaddrToSend.sin6_port = htons(PORT);
 
-        printf("insert your command : \n");
+        
         gets(string);
         char delim[] = " ";
         char *device = strtok(string, delim);
@@ -264,8 +264,8 @@ void *inputThread(void *empty)
         {
             value = atoi(value_c);
         }
-        printf("device : %s\n", device);
-        printf("index : %d \n", index);
+        printf("device : %s, ", device);
+        printf("index : %d, ", index);
         printf("action : %s\n", action);
         if (strcmp(device, "lamp") == 0)
         {
@@ -353,7 +353,7 @@ void *inputThread(void *empty)
                 }
             }
 
-            else if (((strcmp(action, "getmp") == 0)))
+            else if (((strcmp(action, "getTemp") == 0)))
             {
                 warmer_types_t post_type = PTYPE_SENS;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
@@ -366,7 +366,7 @@ void *inputThread(void *empty)
                 }
             }
 
-            else if (((strcmp(action, "getherm") == 0)))
+            else if (((strcmp(action, "getThermostat") == 0)))
             {
                 warmer_types_t post_type = PTYPE_THERM;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
@@ -379,7 +379,7 @@ void *inputThread(void *empty)
             }
         }
 
-        else if ((strcmp(device, "detect") == 0))
+        else if ((strcmp(device, "detector") == 0))
         {
 
             if (((strcmp(action, "on") == 0)))
@@ -410,7 +410,6 @@ void *inputThread(void *empty)
 
             else if (((strcmp(action, "get") == 0)))
             {
-                printf("heeeeeello \n");
                 detector_types_t post_type = GET;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
