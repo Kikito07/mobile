@@ -123,8 +123,8 @@
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>26.888787668014757</x>
-        <y>30.59764557386002</y>
+        <x>55.59689541588968</x>
+        <y>48.70634361353831</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -141,8 +141,8 @@
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>-12.62178530578072</x>
-        <y>15.387115106215965</y>
+        <x>11.946293889182776</x>
+        <y>18.240828426734176</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -159,8 +159,8 @@
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>1.7499087793370975</x>
-        <y>60.02082559720744</y>
+        <x>72.64204935243419</x>
+        <y>98.60427568523065</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -177,8 +177,26 @@
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>47.79906376921929</x>
-        <y>63.58044113782337</y>
+        <x>19.153763093696178</x>
+        <y>101.86461305680197</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        org.contikios.cooja.mspmote.interfaces.MspClock
+        <deviation>1.0</deviation>
+      </interface_config>
+      <interface_config>
+        org.contikios.cooja.mspmote.interfaces.MspMoteID
+        <id>4</id>
+      </interface_config>
+      <motetype_identifier>z13</motetype_identifier>
+    </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        org.contikios.cooja.interfaces.Position
+        <x>58.29717372921512</x>
+        <y>2.9576122038058337</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -189,14 +207,14 @@
         org.contikios.cooja.mspmote.interfaces.MspMoteID
         <id>5</id>
       </interface_config>
-      <motetype_identifier>z13</motetype_identifier>
+      <motetype_identifier>z14</motetype_identifier>
     </mote>
     <mote>
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>81.81066314358489</x>
-        <y>34.41359138940513</y>
+        <x>102.25729985792864</x>
+        <y>62.13822522224571</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -213,8 +231,8 @@
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>74.22789344293594</x>
-        <y>0.9510292068733648</y>
+        <x>100.73039300059773</x>
+        <y>16.402579037578356</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -225,14 +243,14 @@
         org.contikios.cooja.mspmote.interfaces.MspMoteID
         <id>7</id>
       </interface_config>
-      <motetype_identifier>z14</motetype_identifier>
+      <motetype_identifier>z15</motetype_identifier>
     </mote>
     <mote>
       <breakpoints />
       <interface_config>
         org.contikios.cooja.interfaces.Position
-        <x>19.432958961678203</x>
-        <y>-21.589401246396637</y>
+        <x>2.212124331907943</x>
+        <y>59.734193446765346</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -245,32 +263,14 @@
       </interface_config>
       <motetype_identifier>z15</motetype_identifier>
     </mote>
-    <mote>
-      <breakpoints />
-      <interface_config>
-        org.contikios.cooja.interfaces.Position
-        <x>50.309279931028556</x>
-        <y>-6.618750186251823</y>
-        <z>0.0</z>
-      </interface_config>
-      <interface_config>
-        org.contikios.cooja.mspmote.interfaces.MspClock
-        <deviation>1.0</deviation>
-      </interface_config>
-      <interface_config>
-        org.contikios.cooja.mspmote.interfaces.MspMoteID
-        <id>9</id>
-      </interface_config>
-      <motetype_identifier>z15</motetype_identifier>
-    </mote>
   </simulation>
   <plugin>
     org.contikios.cooja.plugins.SimControl
     <width>280</width>
-    <z>8</z>
+    <z>0</z>
     <height>160</height>
-    <location_x>9</location_x>
-    <location_y>650</location_y>
+    <location_x>400</location_x>
+    <location_y>0</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Visualizer
@@ -280,27 +280,13 @@
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>1.3756302464121426 0.0 0.0 1.3756302464121426 181.32681705235902 99.12391758745869</viewport>
+      <viewport>1.0103769572293695 0.0 0.0 1.0103769572293695 121.46118756460102 139.2786581133171</viewport>
     </plugin_config>
     <width>400</width>
-    <z>9</z>
+    <z>5</z>
     <height>400</height>
     <location_x>1</location_x>
     <location_y>1</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.LogListener
-    <plugin_config>
-      <filter />
-      <formatted_time />
-      <coloring />
-    </plugin_config>
-    <width>488</width>
-    <z>-1</z>
-    <height>240</height>
-    <location_x>400</location_x>
-    <location_y>160</location_y>
-    <minimized>true</minimized>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.TimeLine
@@ -318,8 +304,8 @@
       <showLEDs />
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
-    <width>724</width>
-    <z>11</z>
+    <width>1648</width>
+    <z>10</z>
     <height>166</height>
     <location_x>0</location_x>
     <location_y>827</location_y>
@@ -334,102 +320,11 @@ device 5/6 : detector
 device 7/8 : alarm</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <width>264</width>
-    <z>7</z>
+    <width>296</width>
+    <z>9</z>
     <height>160</height>
-    <location_x>-1</location_x>
-    <location_y>469</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>1</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>5</z>
-    <height>300</height>
-    <location_x>357</location_x>
-    <location_y>8</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>2</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>4</z>
-    <height>300</height>
-    <location_x>703</location_x>
-    <location_y>13</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>3</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>6</z>
-    <height>300</height>
-    <location_x>376</location_x>
-    <location_y>420</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>5</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>0</z>
-    <height>300</height>
-    <location_x>1364</location_x>
-    <location_y>298</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>4</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>1</z>
-    <height>300</height>
-    <location_x>1081</location_x>
-    <location_y>290</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>6</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>3</z>
-    <height>300</height>
-    <location_x>822</location_x>
-    <location_y>651</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>7</mote_arg>
-    <plugin_config>
-      <interface>Leds</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>2</z>
-    <height>300</height>
-    <location_x>1187</location_x>
-    <location_y>642</location_y>
+    <location_x>4</location_x>
+    <location_y>402</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.serialsocket.SerialSocketServer
@@ -439,10 +334,88 @@ device 7/8 : alarm</notes>
       <bound>true</bound>
     </plugin_config>
     <width>362</width>
-    <z>10</z>
+    <z>8</z>
     <height>116</height>
-    <location_x>-38</location_x>
-    <location_y>385</location_y>
+    <location_x>-18</location_x>
+    <location_y>572</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>1</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>7</z>
+    <height>300</height>
+    <location_x>403</location_x>
+    <location_y>160</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>2</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>6</z>
+    <height>300</height>
+    <location_x>404</location_x>
+    <location_y>378</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>4</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>2</z>
+    <height>300</height>
+    <location_x>791</location_x>
+    <location_y>2</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>5</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>1</z>
+    <height>300</height>
+    <location_x>1139</location_x>
+    <location_y>4</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>6</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>4</z>
+    <height>300</height>
+    <location_x>782</location_x>
+    <location_y>497</location_y>
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.MoteInterfaceViewer
+    <mote_arg>7</mote_arg>
+    <plugin_config>
+      <interface>Leds</interface>
+      <scrollpos>0,0</scrollpos>
+    </plugin_config>
+    <width>350</width>
+    <z>3</z>
+    <height>300</height>
+    <location_x>1133</location_x>
+    <location_y>487</location_y>
   </plugin>
 </simconf>
 
