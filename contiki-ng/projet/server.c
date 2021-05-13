@@ -179,7 +179,7 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
         int len = lengthDevice(list_device, ALARM);
         for (int i = 0; i < len; i++)
         {
-            char empty[2] = "aa";
+            char empty[2] = "a";
             pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
             pkt_encode(pkt, buf);
             struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
