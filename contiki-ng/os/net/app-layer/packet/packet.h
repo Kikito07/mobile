@@ -16,20 +16,13 @@ typedef enum
   DETECTOR = 4,
 } device_t;
 
-typedef enum
-{
-  QUERY = 0,
-  RESP = 1,
-} query_t;
-
 /* Code */
 typedef enum
 {
   PCODE_GET = 1,
   PCODE_POST = 2,
-  PCODE_ACK = 3,
-  PCODE_HELLO = 4,
-  PCODE_ALARM = 5,
+  PCODE_HELLO = 3,
+  PCODE_ALARM = 4,
 } pcode_t;
 
 typedef enum
@@ -93,8 +86,6 @@ pkt_status_code pkt_encode(const pkt_t *, char *buf);
 pcode_t pkt_get_code(const pkt_t *);
 
 uint8_t pkt_get_ack(const pkt_t *pkt);
-
-query_t pkt_get_query(const pkt_t *pkt);
 
 device_t pkt_get_device(const pkt_t *pkt);
 

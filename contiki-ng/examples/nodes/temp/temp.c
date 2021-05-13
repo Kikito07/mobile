@@ -142,10 +142,10 @@ PROCESS_THREAD(udp_server_process, ev, data)
     pkt_set_ack(&hello_pkt, 0);
     pkt_encode(&hello_pkt, buf_hello);
     
+    PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
+    
     // Send the first hello packet to connect the device to the server. 
     uip_udp_packet_send(server_conn, buf_hello, pkt_size);
-    PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
-
     etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
     while (1)
     { 

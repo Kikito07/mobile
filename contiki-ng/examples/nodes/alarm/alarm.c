@@ -7,31 +7,31 @@
 #ifndef DEBUG
 #define DEBUG DEBUG_FULL
 #endif
-
 #define USE_RPL_CLASSIC 0
-
 #include "net/ipv6/uip-debug.h"
 #include "dev/watchdog.h"
-
 #if USE_RPL_CLASSIC
 #include "net/routing/rpl-classic/rpl-dag-root.h"
 #else
 #include "net/routing/rpl-lite/rpl-dag-root.h"
 #endif
-
 #define MAX_PAYLOAD_LEN 120
+#define SERVER_REPLY 1
+#define SERVER_RPL_ROOT 0
 
 static struct uip_udp_conn *server_conn;
 static char buf[MAX_PAYLOAD_LEN];
 static uint16_t len;
-
-#define SERVER_REPLY 1
-
-/* Should we act as RPL root? */
-#define SERVER_RPL_ROOT 0
-
-// static uip_ipaddr_t ipServAddr;
-
+static struct uip_udp_conn *server_conn;
+static char buf[MAX_PAYLOAD_LEN];
+static char buf_hello[MAX_PAYLOAD_LEN];
+static uint16_t len;
+static struct etimer timer;
+static uip_ipaddr_t ipaddr;
+static size_t pkt_size = 5;
+static device_t device = ALARM;
+static uint8_t msgid = 0;
+static pcode_t hello = PCODE_HELLO;
 
 /*---------------------------------------------------------------------------*/
 
@@ -39,22 +39,6 @@ PROCESS(udp_server_process, "UDP server process");
 
 
 AUTOSTART_PROCESSES(&udp_server_process);
-
-/*---------------------------------------------------------------------------*/
-
-static struct uip_udp_conn *server_conn;
-static char buf[MAX_PAYLOAD_LEN];
-static char buf_hello[MAX_PAYLOAD_LEN];
-static uint16_t len;
-static struct etimer timer;
-
-static uip_ipaddr_t ipaddr;
-static size_t pkt_size = 5;
-    
-
-static device_t device = ALARM;
-static uint8_t msgid = 0;
-static pcode_t hello = PCODE_HELLO;
 
 /*---------------------------------------------------------------------------*/
 
@@ -67,6 +51,8 @@ handle_packet()
     {
         PRINTF("packet received but encode fail");
     }
+
+    // Turnon the alarm if the deveice receive a alarm packet
     pcode_t code = pkt_get_code(&pkt);
 
     if (code == PCODE_ALARM)
@@ -75,6 +61,7 @@ handle_packet()
 
     }
 
+    // turnoff the alarm if a post message is receive 
     if (code == PCODE_POST){
         leds_off(LEDS_RED);
     }
@@ -88,6 +75,8 @@ handle_packet()
     uip_udp_packet_send(server_conn, buf, len);
 
 }
+
+/*---------------------------------------------------------------------------*/
 
 static void
 tcpip_handler(void)
@@ -115,11 +104,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
     PROCESS_BEGIN();
     PRINTF("Starting the server\n");
     
-    // leds_toogle(LEDS_BLUE);
-
-#if SERVER_RPL_ROOT
-    create_dag();
-#endif
 
     uip_ip6addr(&ipaddr,0xBBBB,0,0,0,0,0,0,0x1);
     server_conn = udp_new(&ipaddr, UIP_HTONS(3000), NULL);
@@ -133,18 +117,21 @@ PROCESS_THREAD(udp_server_process, ev, data)
     
     PRINTF("Listen port: 3000, TTL=%u\n", server_conn->ttl);
 
+    uip_udp_packet_send(server_conn, buf_hello, pkt_size);
     etimer_set(&timer, 3 * CLOCK_CONF_SECOND);
     while (1)
     { 
         PROCESS_YIELD();
         if (ev == PROCESS_EVENT_TIMER)
-        {  
+        {   
+            // Send a hello packet to keep the connection alive.
             uip_udp_packet_send(server_conn, buf_hello, pkt_size);
             etimer_reset(&timer);
             
         }
         else if(ev == tcpip_event){
             PRINTF("tcp ip event\n");
+            // If the device receive a packet tcpip_handler manage the packet.
             tcpip_handler();
         }
     }
