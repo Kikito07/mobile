@@ -148,7 +148,6 @@ struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int inde
 
 void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long timer)
 {
-    pthread_mutex_lock(&(list->lock));
     node_device_t *ptr = list->head;
     int i = 0;
     //start from the beginning
@@ -159,12 +158,10 @@ void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long
         if (compare_ipv6Bis(&(ptr->addr->sin6_addr), &addr->sin6_addr) == 0)
         {
             ptr->timer = timer;
-            pthread_mutex_unlock(&(list->lock));
             break;
         }
         ptr = ptr->next;
     }
-    pthread_mutex_unlock(&(list->lock));
 }
 
 void insertLastDevice(list_device_t *list, struct sockaddr_in6 *addr, device_t device, unsigned long timer)
