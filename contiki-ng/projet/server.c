@@ -111,11 +111,11 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             int i = findDevice(list_device, dev, nAddr);
             if (post_type == ACTIVATE)
             {
-                printf("the detector %d is activated \n", i);
+                printf("detector %d is activated \n", i);
             }
             else if (post_type == DESACTIVATE)
             {
-                printf("the detector %d is deactivated \n", i);
+                printf("detector %d is deactivated \n", i);
             }
 
 
