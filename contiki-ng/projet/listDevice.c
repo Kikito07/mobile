@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include <pthread.h>
 
+/*
+@param:ipA 
+@param:ipB 
+function "compare_ipv6Bis": compare two ipv6 addresses, return 0 if they are same, and other if different.*/
 int compare_ipv6Bis(struct in6_addr *ipA, struct in6_addr *ipB)
 {
     int i = 0;
@@ -18,6 +22,11 @@ int compare_ipv6Bis(struct in6_addr *ipA, struct in6_addr *ipB)
     return 0;
 }
 
+
+/*
+@param:device 
+function "printDevice": display device type
+*/
 void printDevice(device_t device)
 {
     if (device == LAMP)
@@ -96,7 +105,7 @@ void printListDevice(list_device_t *list)
 @param:addr 
 function "printListDevice": check if an ip address (device) is already in the list. 
 -if not yet in the list, add the device 
-- if already in the refreshed list 
+-if already in the refreshed list 
 */
 int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
 {
@@ -160,6 +169,12 @@ struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int inde
     return NULL;
 }
 
+/*
+@param:list 
+@param:addr 
+@param:timer 
+function "refreshDevice": updates the Device timer in the list, each time a package is received
+*/
 void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long timer)
 {
     node_device_t *ptr = list->head;
@@ -178,6 +193,13 @@ void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long
     }
 }
 
+/*
+@param:list 
+@param:addr 
+@param:device
+@param:timer 
+function "insertLastDevice": add in the list the last device  to arrive on the network. refresh the list if this device already exists
+*/
 void insertLastDevice(list_device_t *list, struct sockaddr_in6 *addr, device_t device, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
@@ -229,6 +251,11 @@ bool isEmptyListDevice(list_device_t *list)
     return head == NULL;
 }
 
+/*
+@param:list 
+@param:device
+function "lengthDevice": count the number of occurrences of a device in the list
+*/
 int lengthDevice(list_device_t *list, device_t device)
 {
     pthread_mutex_lock(&(list->lock));
@@ -246,6 +273,12 @@ int lengthDevice(list_device_t *list, device_t device)
     return length;
 }
 
+/*
+@param:list 
+@param:device
+@param:addr 
+function "findDevice": find the index of the device in the list
+*/
 int findDevice(list_device_t *list, device_t device, struct sockaddr_in6 *addr)
 {
     pthread_mutex_lock(&(list->lock));
@@ -287,7 +320,11 @@ int findDevice(list_device_t *list, device_t device, struct sockaddr_in6 *addr)
     return index + 1;
 }
 
-//removes devices with an expired timer
+/*
+@param:list 
+@param:timer
+function "deleteTOutDevice": removes devices with an expired timer
+*/
 int deleteTOutDevice(list_device_t *list, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
