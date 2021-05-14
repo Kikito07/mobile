@@ -94,7 +94,6 @@ pkt_t *composePacket(pcode_t code, uint8_t ack, char *payload)
     return new_pkt;
 }
 
-
 unsigned long timer()
 {
     return clock();
@@ -126,7 +125,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             if (post_type == PTYPE_SENS)
             {
                 printf("room temperature %d is %u\n", i, temp);
-                
             }
             if (post_type == PTYPE_THERM)
             {
@@ -146,8 +144,6 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             {
                 printf("detector %d is deactivated \n", i);
             }
-
-
         }
 
         else if ((pkt_get_code(&pkt_routine) == PCODE_POST) && (dev == LAMP))
@@ -214,7 +210,7 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
             if (d_addr != NULL)
             {
-                
+
                 insertFirst(*pkt, list, d_addr, timer());
             }
         }
@@ -240,7 +236,7 @@ int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
 
 int handlePacket(char *b, struct sockaddr_in6 *nAddr)
 {
-    
+
     pkt_t pktHandle;
     if (PKT_OK != pkt_decode(b, &pktHandle))
     {
@@ -266,16 +262,18 @@ void *inputThread(void *empty)
 
     printf("insert your command : \n");
     while (true)
-    {   
+    {
         gets(string);
 
         char delim[] = " ";
         char *device = strtok(string, delim);
-        if(device == NULL){
+        if (device == NULL)
+        {
             device = "none";
         }
         char *action = strtok(NULL, delim);
-        if(action == NULL){
+        if (action == NULL)
+        {
             action = "none";
         }
         char *index_c = strtok(NULL, delim);
@@ -307,7 +305,6 @@ void *inputThread(void *empty)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
                 }
-                
             }
             else if (strcmp(action, "allon") == 0)
             {
@@ -360,7 +357,8 @@ void *inputThread(void *empty)
                     insertFirst(*pkt, list, d_addr, timer());
                 }
             }
-            else{
+            else
+            {
                 printf("Wrong command, retry \n");
             }
         }
@@ -402,7 +400,8 @@ void *inputThread(void *empty)
                     insertFirst(*pkt, list, d_addr, timer());
                 }
             }
-            else{
+            else
+            {
                 printf("Wrong command, retry \n");
             }
         }
@@ -445,25 +444,45 @@ void *inputThread(void *empty)
                 if (d_addr != NULL)
                 {
                     insertFirst(*pkt, list, d_addr, timer());
+                }
             }
-                            }
-            else{
-            printf("Wrong command, retry \n");
+            else
+            {
+                printf("Wrong command, retry \n");
             }
         }
 
-        else if ((strcmp(device, "alarm") == 0) && (strcmp(action, "off") == 0))
+        else if ((strcmp(device, "alarm") == 0))
         {
-            char empty[2] = "a";
-            pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
-            pkt_encode(pkt, buf);
-            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, buf);
-            if (d_addr != NULL)
+            if (strcmp(action, "off") == 0)
             {
-                insertFirst(*pkt, list, d_addr, timer());
+                char empty[2] = "a";
+                pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
+                pkt_encode(pkt, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, buf);
+                if (d_addr != NULL)
+                {
+                    insertFirst(*pkt, list, d_addr, timer());
+                }
             }
-            else{
-            printf("Wrong command, retry \n");
+            else if (strcmp(action, "alloff") == 0)
+            {
+                int len = lengthDevice(list_device, ALARM);
+                for (int i = 0; i < len; i++)
+                {
+                    char empty[2] = "a";
+                    pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
+                    pkt_encode(pkt, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
+                    if (d_addr != NULL)
+                    {
+                        insertFirst(*pkt, list, d_addr, timer());
+                    }
+                }
+            }
+            else
+            {
+                printf("Wrong command, retry \n");
             }
         }
 
@@ -478,7 +497,8 @@ void *inputThread(void *empty)
             printf("\n");
         }
 
-        else{
+        else
+        {
             printf("Wrong command, retry \n");
         }
     }
@@ -536,7 +556,7 @@ int main()
     len = sizeof(nodeAddr);
     while (true)
     {
-      
+
         rc = poll(fds, 1, 50);
         if (rc == -1)
         {
@@ -547,7 +567,7 @@ int main()
             n = recvfrom(sockfd, (char *)bufMain, MAXLINE,
                          MSG_WAITALL, (struct sockaddr *)&nodeAddr, &len);
             bufMain[n] = '\0';
-            
+
             if (n < 0)
             {
                 printf("fail \n");
@@ -557,7 +577,7 @@ int main()
             memcpy(mallocedNodeAddr, &nodeAddr, sizeof(nodeAddr));
             handlePacket(bufMain, mallocedNodeAddr);
         }
-        
+
         // This function is use the retransmit packet if no ack has been received
         // This fonction is located in the file listPacket.c
         reTransmit(list, timer());
