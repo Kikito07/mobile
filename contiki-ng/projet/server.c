@@ -206,8 +206,8 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
         {
             char empty[2] = "a";
             pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
-            pkt_encode(pkt, buf);
-            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
+            pkt_encode(pkt, buf2);
+            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf2);
             if (d_addr != NULL)
             {
 
