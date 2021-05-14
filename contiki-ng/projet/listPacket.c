@@ -114,6 +114,7 @@ node_t *find(uint8_t msgid, list_t *list)
     return current;
 }
 
+//retransmits packets with an expired timer
 int reTransmit(list_t *list, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
@@ -173,6 +174,7 @@ int reTransmit(list_t *list, unsigned long timer)
     return 1;
 }
 
+//function used to compare ipv6 adresses
 int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
 {
     int i = 0;
@@ -186,6 +188,7 @@ int compare_ipv6(struct in6_addr *ipA, struct in6_addr *ipB)
     return 0;
 }
 
+//removes a packet from the list
 node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
 {
 
