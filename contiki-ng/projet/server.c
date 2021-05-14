@@ -126,11 +126,12 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
             }
             if (post_type == PTYPE_SENS)
             {
-                printf("temp of device %d is %u\n", i, temp);
+                printf("room temperature %d is %u\n", i, temp);
+                
             }
             if (post_type == PTYPE_THERM)
             {
-                printf("room temperature %d is %u\n", i, temp);
+                printf("temp of device %d is %u\n", i, temp);
             }
         }
         else if ((pkt_get_code(&pkt_routine) == PCODE_GET) && (dev == DETECTOR))

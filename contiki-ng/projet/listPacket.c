@@ -201,6 +201,7 @@ node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
     //if list is empty
     if (head == NULL)
     {
+        pthread_mutex_unlock(&(list->lock));
         return NULL;
     }
 
@@ -211,8 +212,9 @@ node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
         //if it is last node
         if (current->next == NULL)
         {
-            return NULL;
             pthread_mutex_unlock(&(list->lock));
+            return NULL;
+            
         }
         else
         {
