@@ -49,7 +49,6 @@ pkt_t *pkt;
 struct pollfd fds[1];
 list_t *list;
 list_device_t *list_device;
-struct sockaddr_in6 servaddrToSend;
 unsigned long start;
 bool usedToken[128];
 size_t enc_pkt_size = 6;
@@ -267,12 +266,7 @@ void *inputThread(void *empty)
 
     printf("insert your command : \n");
     while (true)
-    {
-        memset(&servaddrToSend, 0, sizeof(servaddrToSend));
-        servaddrToSend.sin6_family = AF_INET6;
-        servaddrToSend.sin6_port = htons(PORT);
-
-        
+    {   
         gets(string);
 
         char delim[] = " ";
