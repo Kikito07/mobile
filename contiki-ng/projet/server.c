@@ -274,6 +274,7 @@ void *inputThread(void *empty)
 
         
         gets(string);
+
         char delim[] = " ";
         char *device = strtok(string, delim);
         char *action = strtok(NULL, delim);
