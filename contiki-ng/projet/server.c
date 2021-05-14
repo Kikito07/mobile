@@ -206,12 +206,11 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
         {
             char empty[2] = "a";
             pkt_t *pkt = composePacket(PCODE_ALARM, 0, (char *)empty);
-            pkt_encode(pkt, buf2);
-            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf2);
+            struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, pkt);
             if (d_addr != NULL)
             {
 
-                insertFirst(*pkt, list, d_addr, timer());
+                insertFirst(pkt, list, d_addr, timer());
             }
         }
     }
@@ -299,11 +298,10 @@ void *inputThread(void *empty)
             {
                 post_type = PTYPE_LIGHT_ON;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
             else if (strcmp(action, "allon") == 0)
@@ -314,11 +312,10 @@ void *inputThread(void *empty)
                 {
                     post_type = PTYPE_LIGHT_ON;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                    pkt_encode(pkt, buf);
-                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, pkt);
                     if (d_addr != NULL)
                     {
-                        insertFirst(*pkt, list, d_addr, timer());
+                        insertFirst(pkt, list, d_addr, timer());
                     }
                     else
                     {
@@ -333,11 +330,10 @@ void *inputThread(void *empty)
                 {
                     post_type = PTYPE_LIGHT_OFF;
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                    pkt_encode(pkt, buf);
-                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, i + 1, pkt);
                     if (d_addr != NULL)
                     {
-                        insertFirst(*pkt, list, d_addr, timer());
+                        insertFirst(pkt, list, d_addr, timer());
                     }
                     else
                     {
@@ -350,11 +346,10 @@ void *inputThread(void *empty)
 
                 post_type = PTYPE_LIGHT_OFF;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, LAMP, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
             else
@@ -369,11 +364,10 @@ void *inputThread(void *empty)
                 char payload[2];
                 payload[0] = (uint8_t)value;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, payload);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
 
@@ -381,11 +375,10 @@ void *inputThread(void *empty)
             {
                 warmer_types_t post_type = PTYPE_SENS;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
 
@@ -394,10 +387,10 @@ void *inputThread(void *empty)
                 warmer_types_t post_type = PTYPE_THERM;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
                 pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, TEMP, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
             else
@@ -414,11 +407,10 @@ void *inputThread(void *empty)
 
                 detector_types_t post_type = ACTIVATE;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
 
@@ -427,11 +419,10 @@ void *inputThread(void *empty)
 
                 detector_types_t post_type = DESACTIVATE;
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
 
@@ -439,11 +430,10 @@ void *inputThread(void *empty)
             {
                 detector_types_t post_type = GET;
                 pkt_t *pkt = composePacket(PCODE_GET, 0, (char *)&post_type);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, DETECTOR, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
             else
@@ -458,11 +448,10 @@ void *inputThread(void *empty)
             {
                 char empty[2] = "a";
                 pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
-                pkt_encode(pkt, buf);
-                struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, buf);
+                struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, index, pkt);
                 if (d_addr != NULL)
                 {
-                    insertFirst(*pkt, list, d_addr, timer());
+                    insertFirst(pkt, list, d_addr, timer());
                 }
             }
             else if (strcmp(action, "alloff") == 0)
@@ -472,11 +461,10 @@ void *inputThread(void *empty)
                 {
                     char empty[2] = "a";
                     pkt_t *pkt = composePacket(PCODE_POST, 0, (char *)empty);
-                    pkt_encode(pkt, buf);
-                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, buf);
+                    struct sockaddr_in6 *d_addr = sendToDevice(list_device, ALARM, i + 1, pkt);
                     if (d_addr != NULL)
                     {
-                        insertFirst(*pkt, list, d_addr, timer());
+                        insertFirst(pkt, list, d_addr, timer());
                     }
                 }
             }

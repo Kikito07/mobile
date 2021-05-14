@@ -31,14 +31,14 @@ void printList(list_t *list)
     //start from the beginning
     while (ptr != NULL)
     {
-        printf("packet with MSGID : %u\n", (ptr->pkt.msgid));
+        printf("packet with MSGID : %u\n", (ptr->pkt->msgid));
         ptr = ptr->next;
     }
     printf(" ]");
 }
 
 //insert link at the first location
-void insertFirst(pkt_t pkt, list_t *list, struct sockaddr_in6 *addr, unsigned long timer)
+void insertFirst(pkt_t *pkt, list_t *list, struct sockaddr_in6 *addr, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));
     node_t *head = list->head;
@@ -96,7 +96,7 @@ node_t *find(uint8_t msgid, list_t *list)
     }
 
     //navigate through list
-    while (current->pkt.msgid != msgid)
+    while (current->pkt->msgid != msgid)
     {
 
         //if it is last node
@@ -132,11 +132,11 @@ int reTransmit(list_t *list, unsigned long timer)
 
         if ((timer - (current->timer)) > list->r_timer)
         {
-            printf("packet with MSGID : %u retransmitted\n", (current->pkt.msgid));
+            printf("packet with MSGID : %u retransmitted\n", (current->pkt->msgid));
 
             if (current->counter == 0)
             {
-                printf("retransmission limit reached for packet with MSGID %u\n",(current->pkt.msgid));
+                printf("retransmission limit reached for packet with MSGID %u\n",(current->pkt->msgid));
 
                 if (current == list->head)
                 {
@@ -152,8 +152,8 @@ int reTransmit(list_t *list, unsigned long timer)
             else
             {
                 char buf[10];
-                pkt_t pkt = current->pkt;
-                pkt_encode(&pkt, buf);
+                pkt_t *pkt = current->pkt;
+                pkt_encode(pkt, buf);
                 int err = sendto(list->sockfd, buf, 5,
                                  MSG_CONFIRM, (const struct sockaddr *)current->addr,
                                  sizeof(struct sockaddr_in6));
@@ -206,7 +206,7 @@ node_t *delete (uint8_t msgid, list_t *list, struct sockaddr_in6 *addr)
     }
 
     //navigate through list
-    while ((current->pkt.msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr), &addr->sin6_addr) != 0)
+    while ((current->pkt->msgid != msgid) && compare_ipv6(&(current->addr->sin6_addr), &addr->sin6_addr) != 0)
     {
 
         //if it is last node

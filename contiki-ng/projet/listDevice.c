@@ -132,7 +132,7 @@ int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
 @param:buf 
 function "sockaddr_in6": send a packet to device at position index"
 */
-struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int index, char *buf)
+struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int index, pkt_t* pkt)
 {
 
     pthread_mutex_lock(&(list->lock));
@@ -148,6 +148,8 @@ struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int inde
             i++;
             if (i == index)
             {
+                char buf[10];
+                pkt_encode(pkt, buf);
                 int err = sendto(list->sockfd, buf, list->enc_pkt_size,
                                  MSG_CONFIRM, (const struct sockaddr *)ptr->addr,
                                  sizeof(*(ptr->addr)));
