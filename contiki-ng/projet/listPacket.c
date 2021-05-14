@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include "list.h"
+#include "listPacket.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "packet.h"
 #include <pthread.h>
 
 

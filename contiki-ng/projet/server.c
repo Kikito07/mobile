@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include "../os/net/app-layer/packet/packet.h"
-#include "../os/net/app-layer/packet/list.h"
+#include "listPacket.h"
 #include "listDevice.h"
 #include <poll.h>
 #include <pthread.h>
@@ -194,7 +194,7 @@ int ackRoutine(pkt_t pkt_routine, struct sockaddr_in6 *nAddr)
 }
 
 
-//function used to handle connection/disconection and refresh of devices
+//function used to handle connection and refresh of devices
 int receivHello(pkt_t pktHello, struct sockaddr_in6 *nAddr)
 {
 
@@ -520,7 +520,13 @@ int main()
             memcpy(mallocedNodeAddr, &nodeAddr, sizeof(nodeAddr));
             handlePacket(bufMain, mallocedNodeAddr);
         }
+        
+        // This function is use the retransmit packet if no ack has been received
+        // This fonction is located in the file listPacket.c
         reTransmit(list, timer());
+
+        // This function is use the delete device if the server don't receive a hello packet for a while.
+        // This fonction is located in the file listDevice.c
         deleteTOutDevice(list_device, timer());
     }
     pthread_join(thread_id, NULL);

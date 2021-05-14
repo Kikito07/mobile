@@ -67,6 +67,10 @@ list_device_t *init_listDevice(int sockfd, unsigned long r_timer)
     return list;
 }
 
+/*
+@param:list 
+function "printListDevice": contains the list of all connected devices
+*/
 void printListDevice(list_device_t *list)
 {
     node_device_t *ptr = list->head;
@@ -87,6 +91,13 @@ void printListDevice(list_device_t *list)
     printf(" \n ]");
 }
 
+/*
+@param:list 
+@param:addr 
+function "printListDevice": check if an ip address (device) is already in the list. 
+-if not yet in the list, add the device 
+- if already in the refreshed list 
+*/
 int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
 {
     node_device_t *ptr = list->head;
@@ -105,8 +116,13 @@ int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
     return 1;
 }
 
-//insert link at the first location
-
+/*
+@param:list 
+@param:device 
+@param:index 
+@param:buf 
+function "sockaddr_in6": send a packet to device N * "index"
+*/
 struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int index, char *buf)
 {
 
@@ -271,7 +287,7 @@ int findDevice(list_device_t *list, device_t device, struct sockaddr_in6 *addr)
     return index + 1;
 }
 
-//delete a link with given key
+//removes devices with an expired timer
 int deleteTOutDevice(list_device_t *list, unsigned long timer)
 {
     pthread_mutex_lock(&(list->lock));

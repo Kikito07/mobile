@@ -1,8 +1,8 @@
-#include "../os/net/app-layer/packet/packet.h"
 #include "stdbool.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include "../os/net/app-layer/packet/packet.h"
 
 typedef struct nodeDevice {
   struct nodeDevice *next;
