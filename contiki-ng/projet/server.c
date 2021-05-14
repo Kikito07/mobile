@@ -271,7 +271,13 @@ void *inputThread(void *empty)
 
         char delim[] = " ";
         char *device = strtok(string, delim);
+        if(device == NULL){
+            device = "none";
+        }
         char *action = strtok(NULL, delim);
+        if(action == NULL){
+            action = "none";
+        }
         char *index_c = strtok(NULL, delim);
         int index = 0;
         if (index_c != NULL)
