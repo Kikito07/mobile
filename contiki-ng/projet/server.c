@@ -466,12 +466,12 @@ void *inputThread(void *empty)
             }
         }
 
-        else if ((strcmp(device, "list") == 0))
+        else if ((strcmp(device, "listPackets") == 0))
         {
             printList(list);
             printf("\n");
         }
-        else if ((strcmp(device, "listdev") == 0))
+        else if ((strcmp(device, "listDevices") == 0))
         {
             printListDevice(list_device);
             printf("\n");
