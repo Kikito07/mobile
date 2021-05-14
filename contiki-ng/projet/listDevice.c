@@ -78,7 +78,7 @@ list_device_t *init_listDevice(int sockfd, unsigned long r_timer)
 
 /*
 @param:list 
-function "printListDevice": contains the list of all connected devices
+function "printListDevice": prints the list of all connected devices
 */
 void printListDevice(list_device_t *list)
 {
@@ -103,9 +103,9 @@ void printListDevice(list_device_t *list)
 /*
 @param:list 
 @param:addr 
-function "printListDevice": check if an ip address (device) is already in the list. 
--if not yet in the list, add the device 
--if already in the refreshed list 
+function "isNotList": check if an ip address (device) is already in the list. 
+-returns 1 if the device is not in list
+-returns 0 if the device is in the list
 */
 int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
 {
@@ -130,7 +130,7 @@ int isNotInList(list_device_t *list, struct sockaddr_in6 *addr)
 @param:device 
 @param:index 
 @param:buf 
-function "sockaddr_in6": send a packet to device N * "index"
+function "sockaddr_in6": send a packet to device at position index"
 */
 struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int index, char *buf)
 {
@@ -173,7 +173,7 @@ struct sockaddr_in6 *sendToDevice(list_device_t *list, device_t device, int inde
 @param:list 
 @param:addr 
 @param:timer 
-function "refreshDevice": updates the Device timer in the list, each time a package is received
+function "refreshDevice": updates the Device timer in the list, each time a hello packet is received
 */
 void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long timer)
 {
@@ -198,7 +198,7 @@ void refreshDevice(list_device_t *list, struct sockaddr_in6 *addr, unsigned long
 @param:addr 
 @param:device
 @param:timer 
-function "insertLastDevice": add in the list the last device  to arrive on the network. refresh the list if this device already exists
+function "insertLastDevice": add in the list the last device to arrive on the network. refresh the list if this device already exists
 */
 void insertLastDevice(list_device_t *list, struct sockaddr_in6 *addr, device_t device, unsigned long timer)
 {
